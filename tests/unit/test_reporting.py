@@ -1,11 +1,10 @@
-﻿import pytest
+import pytest
 from fastapi.testclient import TestClient
-from backend.app.main import app
-from tests.unit.test_agent import create_audit_test_doc
+
 from backend.agent.orchestrator import check_document_against_ruleset
+from backend.app.main import app
 from backend.reporting.generator import generate_markdown_report, generate_pdf_report
-from backend.agent.findings import findings_repository
-from backend.ingestion.repository import doc_repository
+from tests.unit.test_agent import create_audit_test_doc
 
 client = TestClient(app)
 

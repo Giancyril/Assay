@@ -1,15 +1,21 @@
-﻿import io
+import io
 import re
 import uuid
-from typing import List, Optional
+
 import docx
-from backend.ingestion.models import ParsedDocument, DocumentPage, TextSpan, DocumentFileType
+
+from backend.ingestion.models import (
+    DocumentFileType,
+    DocumentPage,
+    ParsedDocument,
+    TextSpan,
+)
 
 
 def parse_docx(
     file_bytes: bytes,
     filename: str,
-    doc_id: Optional[str] = None,
+    doc_id: str | None = None,
     storage_path: str = ""
 ) -> ParsedDocument:
     """
@@ -18,8 +24,8 @@ def parse_docx(
     """
     doc_id = doc_id or f"doc-{uuid.uuid4().hex[:12]}"
     doc = docx.Document(io.BytesIO(file_bytes))
-    
-    extracted_elements: List[dict] = []
+
+    extracted_elements: list[dict] = []
 
     # 1. Extract paragraphs
     for p in doc.paragraphs:
@@ -48,13 +54,13 @@ def parse_docx(
 
     # Divide into synthetic pages (approx 2,500 characters per page or explicit page boundaries)
     PAGE_CHAR_BUDGET = 2500
-    pages: List[DocumentPage] = []
-    full_text_parts: List[str] = []
-    
+    pages: list[DocumentPage] = []
+    full_text_parts: list[str] = []
+
     current_doc_offset = 0
     current_page_num = 1
-    current_page_spans: List[TextSpan] = []
-    current_page_pieces: List[str] = []
+    current_page_spans: list[TextSpan] = []
+    current_page_pieces: list[str] = []
     current_page_offset = 0
 
     for elem in extracted_elements:

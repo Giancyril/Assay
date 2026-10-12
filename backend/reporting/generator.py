@@ -1,16 +1,15 @@
-﻿import io
-from datetime import datetime, timezone
-from typing import List, Optional, Dict
+from datetime import UTC, datetime
+
 import pymupdf
 
-from backend.ingestion.models import ParsedDocument
 from backend.agent.findings import Finding
-from backend.rules.models import Verdict, Severity
+from backend.ingestion.models import ParsedDocument
+from backend.rules.models import Severity, Verdict
 
 
 def generate_markdown_report(
     doc: ParsedDocument,
-    findings: List[Finding],
+    findings: list[Finding],
     ruleset_name: str = "Commercial NDA Standard Policy",
     ruleset_version: str = "1.0.0"
 ) -> str:
@@ -29,10 +28,10 @@ def generate_markdown_report(
     else:
         overall_status = "**COMPLIANT** (All evaluated rules satisfied)"
 
-    now_iso = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M:%S UTC")
+    now_iso = datetime.now(UTC).strftime("%Y-%m-%d %H:%M:%S UTC")
 
     md = []
-    md.append(f"# Contract Compliance Audit Report\n")
+    md.append("# Contract Compliance Audit Report\n")
     md.append(f"> **Document:** `{doc.filename}`  \n")
     md.append(f"> **Audit Date:** {now_iso}  \n")
     md.append(f"> **Rule Set:** {ruleset_name} (v{ruleset_version})  \n")
@@ -74,7 +73,7 @@ def generate_markdown_report(
             md.append(f"- **Recommended Action:** {f.recommended_action}")
             if f.evidence and f.evidence.verbatim_quote:
                 verified_str = "Verified in Source" if f.evidence.verified else "UNVERIFIED"
-                md.append(f"- **Verbatim Quote:**")
+                md.append("- **Verbatim Quote:**")
                 md.append(f"  > \"{f.evidence.verbatim_quote}\"")
                 md.append(f"  *(Page {f.evidence.page_number}, Chars {f.evidence.char_start}–{f.evidence.char_end} | Evidence Status: {verified_str})*")
             md.append("")
@@ -88,7 +87,7 @@ def generate_markdown_report(
             md.append(f"- **Reasoning:** {f.reasoning}")
             md.append(f"- **Recommended Action:** {f.recommended_action}")
             if f.evidence and f.evidence.verbatim_quote:
-                md.append(f"- **Candidate Quote:**")
+                md.append("- **Candidate Quote:**")
                 md.append(f"  > \"{f.evidence.verbatim_quote}\"")
                 md.append(f"  *(Page {f.evidence.page_number}, Chars {f.evidence.char_start}–{f.evidence.char_end})*")
             if f.searches_run:
@@ -117,7 +116,7 @@ def generate_markdown_report(
 
 def generate_pdf_report(
     doc: ParsedDocument,
-    findings: List[Finding],
+    findings: list[Finding],
     ruleset_name: str = "Commercial NDA Standard Policy",
     ruleset_version: str = "1.0.0"
 ) -> bytes:
@@ -141,7 +140,7 @@ def generate_pdf_report(
     y += 18
 
     # Metadata Header Box
-    now_iso = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M UTC")
+    now_iso = datetime.now(UTC).strftime("%Y-%m-%d %H:%M UTC")
     meta_text = (
         f"Document: {doc.filename}\n"
         f"Rule Set: {ruleset_name} (v{ruleset_version})\n"

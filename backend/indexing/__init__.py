@@ -1,1 +1,1 @@
-﻿# backend.indexing package
+# backend.indexing package

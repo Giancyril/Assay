@@ -1,9 +1,11 @@
-﻿import copy
-from typing import Dict, List, Optional
-from datetime import datetime, timezone
 from fastapi import HTTPException, status
+
 from backend.rules.models import (
-    ComplianceRule, RuleSet, RuleType, Severity, RuleParameters
+    ComplianceRule,
+    RuleParameters,
+    RuleSet,
+    RuleType,
+    Severity,
 )
 
 # ----------------- STARTER RULE SET: COMMERCIAL NDA -----------------
@@ -346,9 +348,9 @@ class RuleEngine:
     """
     def __init__(self):
         # Key: (ruleset_id, version) -> RuleSet
-        self._ruleset_versions: Dict[str, RuleSet] = {}
+        self._ruleset_versions: dict[str, RuleSet] = {}
         # Key: ruleset_id -> latest_version string
-        self._latest_versions: Dict[str, str] = {}
+        self._latest_versions: dict[str, str] = {}
         self._seed_starter_libraries()
 
     def _seed_starter_libraries(self):
@@ -381,7 +383,7 @@ class RuleEngine:
         self._ruleset_versions[key] = ruleset
         self._latest_versions[ruleset.id] = ruleset.version
 
-    def get_rule_set(self, ruleset_id: str, version: Optional[str] = None) -> RuleSet:
+    def get_rule_set(self, ruleset_id: str, version: str | None = None) -> RuleSet:
         target_version = version or self._latest_versions.get(ruleset_id)
         if not target_version:
             raise HTTPException(
@@ -397,14 +399,14 @@ class RuleEngine:
             )
         return ruleset
 
-    def list_rule_sets(self) -> List[RuleSet]:
+    def list_rule_sets(self) -> list[RuleSet]:
         """Returns the latest version of all registered rule sets."""
         result = []
         for r_id, ver in self._latest_versions.items():
             result.append(self._ruleset_versions[f"{r_id}:{ver}"])
         return result
 
-    def list_versions_for_set(self, ruleset_id: str) -> List[str]:
+    def list_versions_for_set(self, ruleset_id: str) -> list[str]:
         versions = []
         for key in self._ruleset_versions.keys():
             if key.startswith(f"{ruleset_id}:"):
@@ -415,8 +417,8 @@ class RuleEngine:
         self,
         ruleset_id: str,
         new_version: str,
-        updated_rules: List[ComplianceRule],
-        description: Optional[str] = None
+        updated_rules: list[ComplianceRule],
+        description: str | None = None
     ) -> RuleSet:
         """
         Creates a new version of a rule set without overwriting previous versions.

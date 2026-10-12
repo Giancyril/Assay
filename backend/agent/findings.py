@@ -1,12 +1,13 @@
-﻿import os
 import json
+import os
 import uuid
-from datetime import datetime, timezone
-from typing import List, Optional, Dict
+from datetime import UTC, datetime
+
 from pydantic import BaseModel, Field
-from backend.rules.models import Verdict, Severity, RuleType
-from backend.evidence.verifier import EvidenceSpan
+
 from backend.app.config import settings
+from backend.evidence.verifier import EvidenceSpan
+from backend.rules.models import RuleType, Severity, Verdict
 
 
 class Finding(BaseModel):
@@ -18,27 +19,27 @@ class Finding(BaseModel):
     rule_type: RuleType
     verdict: Verdict
     severity: Severity
-    evidence: Optional[EvidenceSpan] = None
+    evidence: EvidenceSpan | None = None
     reasoning: str
     recommended_action: str
     confidence: float
-    searches_run: List[str] = Field(default_factory=list)
+    searches_run: list[str] = Field(default_factory=list)
     rule_set_version: str = "1.0.0"
     model_used: str = "gpt-4o-mini"
-    created_at: str = Field(default_factory=lambda: datetime.now(timezone.utc).isoformat())
+    created_at: str = Field(default_factory=lambda: datetime.now(UTC).isoformat())
     reviewer_status: str = "pending"  # pending, confirmed, overridden, not_applicable
-    reviewer_override_reason: Optional[str] = None
-    reviewed_by: Optional[str] = None
-    reviewed_at: Optional[str] = None
+    reviewer_override_reason: str | None = None
+    reviewed_by: str | None = None
+    reviewed_at: str | None = None
 
 
 class FindingsRepository:
-    def __init__(self, base_dir: Optional[str] = None):
+    def __init__(self, base_dir: str | None = None):
         self.base_dir = base_dir or settings.UPLOAD_DIR
-        self._cache: Dict[str, List[Finding]] = {}
-        self._all_findings_by_id: Dict[str, Finding] = {}
+        self._cache: dict[str, list[Finding]] = {}
+        self._all_findings_by_id: dict[str, Finding] = {}
 
-    def save_findings(self, document_id: str, findings: List[Finding]) -> List[Finding]:
+    def save_findings(self, document_id: str, findings: list[Finding]) -> list[Finding]:
         self._cache[document_id] = findings
         for f in findings:
             self._all_findings_by_id[f.id] = f
@@ -51,14 +52,14 @@ class FindingsRepository:
             json.dump(dump_data, f, indent=2)
         return findings
 
-    def get_findings_for_document(self, document_id: str) -> List[Finding]:
+    def get_findings_for_document(self, document_id: str) -> list[Finding]:
         if document_id in self._cache:
             return self._cache[document_id]
 
         findings_path = os.path.join(self.base_dir, document_id, "findings.json")
         if os.path.exists(findings_path):
             try:
-                with open(findings_path, "r", encoding="utf-8") as f:
+                with open(findings_path, encoding="utf-8") as f:
                     data = json.load(f)
                     findings = [Finding.model_validate(item) for item in data]
                     self._cache[document_id] = findings
@@ -69,7 +70,7 @@ class FindingsRepository:
                 pass
         return []
 
-    def get_finding_by_id(self, finding_id: str) -> Optional[Finding]:
+    def get_finding_by_id(self, finding_id: str) -> Finding | None:
         if finding_id in self._all_findings_by_id:
             return self._all_findings_by_id[finding_id]
         # Search all document folders on disk if not in cache
@@ -86,9 +87,9 @@ class FindingsRepository:
         self,
         finding_id: str,
         reviewer_status: str,
-        override_reason: Optional[str] = None,
-        reviewed_by: Optional[str] = None
-    ) -> Optional[Finding]:
+        override_reason: str | None = None,
+        reviewed_by: str | None = None
+    ) -> Finding | None:
         finding = self.get_finding_by_id(finding_id)
         if not finding:
             return None
@@ -96,7 +97,7 @@ class FindingsRepository:
         finding.reviewer_status = reviewer_status
         finding.reviewer_override_reason = override_reason
         finding.reviewed_by = reviewed_by or "compliance_reviewer"
-        finding.reviewed_at = datetime.now(timezone.utc).isoformat()
+        finding.reviewed_at = datetime.now(UTC).isoformat()
 
         doc_findings = self.get_findings_for_document(finding.document_id)
         self.save_findings(finding.document_id, doc_findings)

@@ -1,4 +1,4 @@
-﻿"""
+"""
 Standalone Retrieval Evaluation Script.
 Evaluates hybrid clause retrieval accuracy across synthetic benchmark contracts.
 """

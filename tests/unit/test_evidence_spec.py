@@ -1,4 +1,3 @@
-﻿import pytest
 from backend.evidence.verifier import verify_quote_in_page_text
 
 

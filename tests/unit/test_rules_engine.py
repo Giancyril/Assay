@@ -1,8 +1,8 @@
-﻿import pytest
 from fastapi.testclient import TestClient
+
 from backend.app.main import app
 from backend.rules.engine import rule_engine
-from backend.rules.models import Verdict, RuleType, Severity, ComplianceRule, RuleParameters
+from backend.rules.models import ComplianceRule, RuleType, Severity, Verdict
 from backend.rules.precheck import run_deterministic_precheck
 
 client = TestClient(app)

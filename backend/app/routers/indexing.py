@@ -1,6 +1,6 @@
-﻿from typing import List, Optional
-from pydantic import BaseModel
 from fastapi import APIRouter, HTTPException, status
+from pydantic import BaseModel
+
 from backend.indexing.models import ClauseChunk, RetrievalResult
 from backend.indexing.service import clause_index_service
 
@@ -13,19 +13,19 @@ class SearchQueryRequest(BaseModel):
     alpha: float = 0.5  # 0 = pure lexical, 1 = pure vector, 0.5 = balanced hybrid
 
 
-@router.post("/{doc_id}/index", response_model=List[ClauseChunk])
+@router.post("/{doc_id}/index", response_model=list[ClauseChunk])
 async def trigger_document_indexing(doc_id: str):
     """Parse structure-aware clause chunks from document and build hybrid index."""
     return clause_index_service.index_document(doc_id)
 
 
-@router.get("/{doc_id}/clauses", response_model=List[ClauseChunk])
+@router.get("/{doc_id}/clauses", response_model=list[ClauseChunk])
 async def get_document_clauses(doc_id: str):
     """Retrieve all structure-aware clauses extracted from document."""
     return clause_index_service.get_document_clauses(doc_id)
 
 
-@router.post("/{doc_id}/search", response_model=List[RetrievalResult])
+@router.post("/{doc_id}/search", response_model=list[RetrievalResult])
 async def search_document_clauses(doc_id: str, body: SearchQueryRequest):
     """Perform hybrid retrieval on document clauses using full-text and vector search."""
     if not body.query or not body.query.strip():

@@ -1,16 +1,16 @@
-﻿import os
 import json
+import os
 import shutil
-from typing import List, Optional, Dict
+
 from backend.app.config import settings
-from backend.ingestion.models import ParsedDocument, DocumentPage, TextSpan
+from backend.ingestion.models import ParsedDocument
 
 
 class DocumentRepository:
-    def __init__(self, base_dir: Optional[str] = None):
+    def __init__(self, base_dir: str | None = None):
         self.base_dir = base_dir or settings.UPLOAD_DIR
         os.makedirs(self.base_dir, exist_ok=True)
-        self._memory_cache: Dict[str, ParsedDocument] = {}
+        self._memory_cache: dict[str, ParsedDocument] = {}
         self._load_existing_manifests()
 
     def _load_existing_manifests(self):
@@ -22,7 +22,7 @@ class DocumentRepository:
             manifest_path = os.path.join(doc_dir, "manifest.json")
             if os.path.isdir(doc_dir) and os.path.exists(manifest_path):
                 try:
-                    with open(manifest_path, "r", encoding="utf-8") as f:
+                    with open(manifest_path, encoding="utf-8") as f:
                         data = json.load(f)
                         parsed = ParsedDocument.model_validate(data)
                         self._memory_cache[parsed.id] = parsed
@@ -54,10 +54,10 @@ class DocumentRepository:
         self._memory_cache[doc.id] = doc
         return doc
 
-    def get_document(self, doc_id: str) -> Optional[ParsedDocument]:
+    def get_document(self, doc_id: str) -> ParsedDocument | None:
         return self._memory_cache.get(doc_id)
 
-    def list_documents(self) -> List[ParsedDocument]:
+    def list_documents(self) -> list[ParsedDocument]:
         return list(self._memory_cache.values())
 
     def delete_document(self, doc_id: str) -> bool:

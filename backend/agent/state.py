@@ -1,7 +1,7 @@
-﻿from typing import List, Optional, Dict, Any
 from pydantic import BaseModel, Field
-from backend.rules.models import ComplianceRule, Verdict, PrecheckResult
+
 from backend.indexing.models import ClauseChunk
+from backend.rules.models import ComplianceRule, PrecheckResult, Verdict
 
 
 class ComplianceCheckState(BaseModel):
@@ -9,27 +9,27 @@ class ComplianceCheckState(BaseModel):
     rule_id: str
     rule: ComplianceRule
     full_document_text: str = ""
-    retrieved_chunks: List[ClauseChunk] = Field(default_factory=list)
-    searches_run: List[str] = Field(default_factory=list)
+    retrieved_chunks: list[ClauseChunk] = Field(default_factory=list)
+    searches_run: list[str] = Field(default_factory=list)
     iteration_count: int = 0
     max_iterations: int = 3
-    precheck_result: Optional[PrecheckResult] = None
-    
+    precheck_result: PrecheckResult | None = None
+
     # Verdict & Evidence
-    verdict: Optional[Verdict] = None
-    verbatim_quote: Optional[str] = None
-    page_number: Optional[int] = None
-    char_start: Optional[int] = None
-    char_end: Optional[int] = None
+    verdict: Verdict | None = None
+    verbatim_quote: str | None = None
+    page_number: int | None = None
+    char_start: int | None = None
+    char_end: int | None = None
     evidence_verified: bool = False
-    rejection_reason: Optional[str] = None
-    
+    rejection_reason: str | None = None
+
     # Analysis & Recommendation
     reasoning: str = ""
     recommended_action: str = ""
     confidence: float = 0.0
     requires_human_review: bool = False
-    
+
     # Finding metadata
-    finding_id: Optional[str] = None
-    error: Optional[str] = None
+    finding_id: str | None = None
+    error: str | None = None

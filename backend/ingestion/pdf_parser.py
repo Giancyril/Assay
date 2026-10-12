@@ -1,15 +1,20 @@
-﻿import io
 import re
 import uuid
-from typing import Tuple, List, Optional
+
 import pymupdf
-from backend.ingestion.models import ParsedDocument, DocumentPage, TextSpan, DocumentFileType
+
+from backend.ingestion.models import (
+    DocumentFileType,
+    DocumentPage,
+    ParsedDocument,
+    TextSpan,
+)
 
 
 def parse_pdf(
     file_bytes: bytes,
     filename: str,
-    doc_id: Optional[str] = None,
+    doc_id: str | None = None,
     storage_path: str = ""
 ) -> ParsedDocument:
     """
@@ -18,24 +23,24 @@ def parse_pdf(
     """
     doc_id = doc_id or f"doc-{uuid.uuid4().hex[:12]}"
     pdf_doc = pymupdf.open(stream=file_bytes, filetype="pdf")
-    
-    pages: List[DocumentPage] = []
-    full_text_parts: List[str] = []
+
+    pages: list[DocumentPage] = []
+    full_text_parts: list[str] = []
     current_doc_offset = 0
     document_is_ocr = False
 
     for page_index in range(len(pdf_doc)):
         page = pdf_doc[page_index]
         page_number = page_index + 1
-        
+
         # Extract text blocks: tuple (x0, y0, x1, y1, text, block_no, block_type)
         raw_blocks = page.get_text("blocks")
         images = page.get_images()
-        
-        page_spans: List[TextSpan] = []
-        page_text_pieces: List[str] = []
+
+        page_spans: list[TextSpan] = []
+        page_text_pieces: list[str] = []
         page_offset = 0
-        
+
         # Check for scanned page: minimal text (< 50 chars) and page has images
         page_text_raw = page.get_text("text").strip()
         page_is_ocr = False

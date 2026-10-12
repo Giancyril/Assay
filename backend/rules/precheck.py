@@ -1,6 +1,6 @@
-﻿import re
-from typing import Optional, Tuple
-from backend.rules.models import ComplianceRule, RuleType, Verdict, PrecheckResult
+import re
+
+from backend.rules.models import ComplianceRule, PrecheckResult, RuleType, Verdict
 
 
 def extract_surrounding_sentence(text: str, match_start: int, match_end: int) -> str:
@@ -23,7 +23,7 @@ def extract_surrounding_sentence(text: str, match_start: int, match_end: int) ->
     return sentence if sentence else text[match_start:match_end]
 
 
-def check_prohibited_terms(text: str, rule: ComplianceRule) -> Optional[PrecheckResult]:
+def check_prohibited_terms(text: str, rule: ComplianceRule) -> PrecheckResult | None:
     """Deterministically checks for prohibited contract terms using regex patterns."""
     regex_pattern = rule.deterministic_regex
     if not regex_pattern and rule.parameters.prohibited_terms:
@@ -48,7 +48,7 @@ def check_prohibited_terms(text: str, rule: ComplianceRule) -> Optional[Precheck
     return None
 
 
-def check_numeric_duration_threshold(text: str, rule: ComplianceRule) -> Optional[PrecheckResult]:
+def check_numeric_duration_threshold(text: str, rule: ComplianceRule) -> PrecheckResult | None:
     """Deterministically checks confidentiality term duration vs maximum permissible threshold."""
     # 1. Check perpetual duration
     perpetual_match = re.search(
@@ -112,7 +112,7 @@ def check_numeric_duration_threshold(text: str, rule: ComplianceRule) -> Optiona
     return None
 
 
-def check_numeric_notice_threshold(text: str, rule: ComplianceRule) -> Optional[PrecheckResult]:
+def check_numeric_notice_threshold(text: str, rule: ComplianceRule) -> PrecheckResult | None:
     """Deterministically checks notice period (e.g. min 30 days notice for termination)."""
     notice_match = re.search(
         r"\b(?:[a-zA-Z]+\s+\()?(\d+)\)?\s+days?(?:['\u2019])?\s*(?:prior\s+)?(?:written\s+)?notice\b",

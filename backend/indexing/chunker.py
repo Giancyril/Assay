@@ -1,8 +1,7 @@
-﻿import re
-import uuid
-from typing import List, Optional, Tuple
-from backend.ingestion.models import ParsedDocument
+import re
+
 from backend.indexing.models import ClauseChunk
+from backend.ingestion.models import ParsedDocument
 
 # Regex patterns for detecting contract sections and headings
 HEADING_PATTERNS = [
@@ -15,7 +14,7 @@ HEADING_PATTERNS = [
 ]
 
 
-def extract_section_headers(text: str) -> List[Tuple[int, int, Optional[str], str]]:
+def extract_section_headers(text: str) -> list[tuple[int, int, str | None, str]]:
     """
     Finds section boundaries in text.
     Returns list of (start_char, end_char, section_number, section_title).
@@ -64,7 +63,7 @@ def find_page_for_offset(parsed_doc: ParsedDocument, offset: int) -> int:
     return 1 if not parsed_doc.pages else parsed_doc.pages[-1].page_number
 
 
-def chunk_document_by_structure(parsed_doc: ParsedDocument) -> List[ClauseChunk]:
+def chunk_document_by_structure(parsed_doc: ParsedDocument) -> list[ClauseChunk]:
     """
     Splits a document into structure-aware clause chunks.
     Ensures clauses are not split mid-sentence or mid-section, keeping section
@@ -75,7 +74,7 @@ def chunk_document_by_structure(parsed_doc: ParsedDocument) -> List[ClauseChunk]
         return []
 
     headers = extract_section_headers(text)
-    chunks: List[ClauseChunk] = []
+    chunks: list[ClauseChunk] = []
 
     # If no headers detected, chunk into clean paragraph-based segments
     if not headers:

@@ -1,6 +1,6 @@
-﻿from typing import List
-from pydantic_settings import BaseSettings, SettingsConfigDict
+
 from pydantic import Field
+from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
 class Settings(BaseSettings):
@@ -21,12 +21,12 @@ class Settings(BaseSettings):
     )
 
     # CORS
-    BACKEND_CORS_ORIGINS: List[str] = ["http://localhost:5173", "http://localhost:3000"]
+    BACKEND_CORS_ORIGINS: list[str] = ["http://localhost:5173", "http://localhost:3000"]
 
     # File Uploads
     UPLOAD_DIR: str = "backend/uploads"
     MAX_UPLOAD_SIZE_MB: int = 25
-    ALLOWED_EXTENSIONS: List[str] = ["pdf", "docx"]
+    ALLOWED_EXTENSIONS: list[str] = ["pdf", "docx"]
 
     # LLM Settings
     OPENAI_API_KEY: str = Field(default="")

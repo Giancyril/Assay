@@ -1,1 +1,1 @@
-﻿# backend.rules package
+# backend.rules package

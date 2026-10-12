@@ -1,6 +1,6 @@
-﻿import re
-from typing import Optional, Tuple
-from pydantic import BaseModel, Field
+import re
+
+from pydantic import BaseModel
 
 
 class EvidenceSpan(BaseModel):
@@ -9,7 +9,7 @@ class EvidenceSpan(BaseModel):
     char_start: int
     char_end: int
     verified: bool = False
-    rejection_reason: Optional[str] = None
+    rejection_reason: str | None = None
 
 
 def normalize_whitespace(text: str) -> str:
@@ -22,7 +22,7 @@ def verify_quote_in_page_text(
     page_text: str,
     page_number: int,
     char_offset_in_doc: int = 0
-) -> Tuple[bool, Optional[EvidenceSpan]]:
+) -> tuple[bool, EvidenceSpan | None]:
     """
     Deterministically verify that verbatim_quote exists within page_text.
     Allows for whitespace differences while preserving exact character offsets.
@@ -74,7 +74,7 @@ def verify_quote_in_page_text(
             char_start=0,
             char_end=0,
             verified=False,
-            rejection_reason=f"Regex verification error: {str(e)}"
+            rejection_reason=f"Regex verification error: {e!s}"
         )
 
     # 3. Quote was not found in source text

@@ -1,23 +1,24 @@
-﻿from enum import Enum
-from typing import Dict, Any, List, Optional
+from enum import StrEnum
+from typing import Any
+
 from pydantic import BaseModel, Field
 
 
-class RuleType(str, Enum):
+class RuleType(StrEnum):
     REQUIRED_CLAUSE = "required_clause"
     PROHIBITED_TERM = "prohibited_term"
     NUMERIC_THRESHOLD = "numeric_threshold"
     CONDITIONAL = "conditional"
 
 
-class Severity(str, Enum):
+class Severity(StrEnum):
     CRITICAL = "critical"
     HIGH = "high"
     MEDIUM = "medium"
     LOW = "low"
 
 
-class Verdict(str, Enum):
+class Verdict(StrEnum):
     COMPLIANT = "compliant"
     VIOLATION = "violation"
     NEEDS_REVIEW = "needs_review"
@@ -33,13 +34,13 @@ class ComplianceRule(BaseModel):
     description: str
     rule_type: RuleType
     severity: Severity
-    applicable_document_types: List[str] = Field(default_factory=lambda: ["NDA", "Confidentiality Agreement"])
-    parameters: Dict[str, Any] = Field(default_factory=dict)
-    deterministic_regex: Optional[str] = None
-    guidance: Optional[str] = None
+    applicable_document_types: list[str] = Field(default_factory=lambda: ["NDA", "Confidentiality Agreement"])
+    parameters: dict[str, Any] = Field(default_factory=dict)
+    deterministic_regex: str | None = None
+    guidance: str | None = None
 
 
-STARTER_NDA_RULES: List[ComplianceRule] = [
+STARTER_NDA_RULES: list[ComplianceRule] = [
     ComplianceRule(
         id="rule-nda-01",
         code="NDA-01",

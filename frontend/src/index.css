@@ -1,5 +1,9 @@
 @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&family=Lora:ital,wght@0,400;0,500;0,600;1,400&display=swap');
 
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
 :root {
   --bg-primary: #f8fafc;
   --bg-surface: #ffffff;
@@ -11,7 +15,7 @@
   --text-secondary: #475569;
   --text-muted: #64748b;
 
-  /* Strict Verdict Colors - Only used for verdicts & status */
+  /* Strict Verdict Colors */
   --verdict-compliant-bg: #ecfdf5;
   --verdict-compliant-text: #065f46;
   --verdict-compliant-border: #a7f3d0;

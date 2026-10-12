@@ -1,6 +1,5 @@
-﻿import pytest
-from fastapi.testclient import TestClient
 import pymupdf
+from fastapi.testclient import TestClient
 
 from backend.app.main import app
 from backend.rules.models import Verdict

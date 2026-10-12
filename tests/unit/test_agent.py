@@ -1,11 +1,12 @@
-﻿import pytest
+import pytest
 from fastapi.testclient import TestClient
+
+from backend.agent.graph import compliance_graph
+from backend.agent.orchestrator import check_document_against_ruleset
+from backend.agent.state import ComplianceCheckState
 from backend.app.main import app
 from backend.ingestion.service import ingest_document_bytes
 from backend.rules.engine import rule_engine
-from backend.agent.state import ComplianceCheckState
-from backend.agent.graph import compliance_graph
-from backend.agent.orchestrator import check_document_against_ruleset
 from backend.rules.models import Verdict
 
 client = TestClient(app)

@@ -1,5 +1,4 @@
-﻿import pytest
-from backend.rules.starter_rules import STARTER_NDA_RULES, RuleType, Severity
+from backend.rules.starter_rules import STARTER_NDA_RULES, RuleType
 
 
 def test_starter_nda_rules_count_and_uniqueness():
@@ -21,7 +20,7 @@ def test_deterministic_regex_on_prohibited_terms():
     import re
     rule_nda_05 = next(r for r in STARTER_NDA_RULES if r.code == "NDA-05")
     assert rule_nda_05.deterministic_regex is not None
-    
+
     test_sample = "Recipient shall not directly or indirectly solicit any employee of Discloser."
     match = re.search(rule_nda_05.deterministic_regex, test_sample, re.IGNORECASE)
     assert match is not None

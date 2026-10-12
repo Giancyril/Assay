@@ -1,15 +1,17 @@
-﻿import logging
+import logging
 from contextlib import asynccontextmanager
-from datetime import datetime, timezone
+from datetime import UTC, datetime
+
 from fastapi import FastAPI, status
 from fastapi.middleware.cors import CORSMiddleware
+
 from backend.app.config import settings
 from backend.app.database import check_db_health
+from backend.app.routers.checks import router as checks_router
 from backend.app.routers.documents import router as documents_router
 from backend.app.routers.indexing import router as indexing_router
-from backend.app.routers.rules import router as rules_router
-from backend.app.routers.checks import router as checks_router
 from backend.app.routers.reports import router as reports_router
+from backend.app.routers.rules import router as rules_router
 
 logging.basicConfig(
     level=settings.LOG_LEVEL,
@@ -59,7 +61,7 @@ async def health_check():
         "version": settings.VERSION,
         "environment": settings.ENVIRONMENT,
         "database_connected": db_connected,
-        "timestamp": datetime.now(timezone.utc).isoformat()
+        "timestamp": datetime.now(UTC).isoformat()
     }
 
 

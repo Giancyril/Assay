@@ -1,4 +1,4 @@
-﻿"""
+"""
 Seed evaluation dataset generator: creates 4 synthetic contracts with known compliance statuses.
 Used for offline evaluation, prompt-injection defense, and regression testing.
 """

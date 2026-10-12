@@ -1,16 +1,16 @@
-﻿import re
-import math
 import hashlib
-from typing import List, Dict, Tuple, Optional
+import math
+import re
+
 from backend.indexing.models import ClauseChunk, RetrievalResult
 
 
-def tokenize(text: str) -> List[str]:
+def tokenize(text: str) -> list[str]:
     """Tokenize and normalize text into lowercase terms."""
     return re.findall(r"\b[a-zA-Z0-9_-]{2,}\b", text.lower())
 
 
-def compute_deterministic_pseudo_embedding(text: str, dim: int = 128) -> List[float]:
+def compute_deterministic_pseudo_embedding(text: str, dim: int = 128) -> list[float]:
     """
     Computes a deterministic dense n-gram vector for offline / mock testing
     when an external LLM embedding API is not configured or in unit tests.
@@ -37,7 +37,7 @@ def compute_deterministic_pseudo_embedding(text: str, dim: int = 128) -> List[fl
     return vec
 
 
-def cosine_similarity(v1: List[float], v2: List[float]) -> float:
+def cosine_similarity(v1: list[float], v2: list[float]) -> float:
     """Calculates cosine similarity between two normalized vectors."""
     if not v1 or not v2 or len(v1) != len(v2):
         return 0.0
@@ -50,10 +50,10 @@ class HybridRetriever:
     Hybrid retriever combining full-text search (exact legal terminology & BM25)
     with dense semantic vector similarity.
     """
-    def __init__(self, chunks: List[ClauseChunk]):
+    def __init__(self, chunks: list[ClauseChunk]):
         self.chunks = chunks
-        self._doc_tokens: Dict[str, List[str]] = {}
-        self._doc_embeddings: Dict[str, List[float]] = {}
+        self._doc_tokens: dict[str, list[str]] = {}
+        self._doc_embeddings: dict[str, list[float]] = {}
         self._index_chunks()
 
     def _index_chunks(self):
@@ -65,18 +65,18 @@ class HybridRetriever:
             else:
                 self._doc_embeddings[c.id] = compute_deterministic_pseudo_embedding(f"{c.section_title} {c.content}")
 
-    def fts_search(self, query: str) -> Dict[str, float]:
+    def fts_search(self, query: str) -> dict[str, float]:
         """Calculates full-text lexical score with phrase boosting."""
         q_tokens = tokenize(query)
         q_lower = query.lower().strip()
-        scores: Dict[str, float] = {}
+        scores: dict[str, float] = {}
 
         if not q_tokens:
             return {c.id: 0.0 for c in self.chunks}
 
         total_docs = len(self.chunks)
         # Compute term frequencies and document frequencies
-        df: Dict[str, int] = {}
+        df: dict[str, int] = {}
         for term in set(q_tokens):
             df[term] = sum(1 for c in self.chunks if term in self._doc_tokens[c.id])
 
@@ -84,7 +84,7 @@ class HybridRetriever:
             c_tokens = self._doc_tokens[c.id]
             doc_len = len(c_tokens) or 1
             score = 0.0
-            
+
             # BM25-style term weighting
             for term in q_tokens:
                 tf = c_tokens.count(term)
@@ -108,10 +108,10 @@ class HybridRetriever:
         max_s = max(scores.values()) if scores and max(scores.values()) > 0 else 1.0
         return {cid: min(1.0, s / max_s) for cid, s in scores.items()}
 
-    def vector_search(self, query: str) -> Dict[str, float]:
+    def vector_search(self, query: str) -> dict[str, float]:
         """Calculates dense semantic similarity score."""
         q_vec = compute_deterministic_pseudo_embedding(query)
-        scores: Dict[str, float] = {}
+        scores: dict[str, float] = {}
         for c in self.chunks:
             c_vec = self._doc_embeddings.get(c.id, [])
             sim = cosine_similarity(q_vec, c_vec)
@@ -123,7 +123,7 @@ class HybridRetriever:
         query: str,
         top_k: int = 5,
         alpha: float = 0.5
-    ) -> List[RetrievalResult]:
+    ) -> list[RetrievalResult]:
         """
         Runs hybrid retrieval combining vector search and FTS.
         alpha=1.0 is vector-only, alpha=0.0 is FTS-only, alpha=0.5 is balanced.
@@ -134,7 +134,7 @@ class HybridRetriever:
         fts_scores = self.fts_search(query)
         vector_scores = self.vector_search(query)
 
-        results: List[RetrievalResult] = []
+        results: list[RetrievalResult] = []
         for c in self.chunks:
             f_score = fts_scores.get(c.id, 0.0)
             v_score = vector_scores.get(c.id, 0.0)

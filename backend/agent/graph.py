@@ -1,17 +1,18 @@
-﻿import re
 import uuid
-from typing import Dict, Any, List
-from langgraph.graph import StateGraph, END
-from backend.agent.state import ComplianceCheckState
+from typing import Any
+
+from langgraph.graph import END, StateGraph
+
 from backend.agent.judge import judge_candidate_clause
-from backend.rules.precheck import run_deterministic_precheck
+from backend.agent.state import ComplianceCheckState
 from backend.evidence.verifier import verify_quote_in_page_text
 from backend.indexing.service import clause_index_service
 from backend.ingestion.repository import doc_repository
 from backend.rules.models import Verdict
+from backend.rules.precheck import run_deterministic_precheck
 
 
-def precheck_node(state: ComplianceCheckState) -> Dict[str, Any]:
+def precheck_node(state: ComplianceCheckState) -> dict[str, Any]:
     """
     Runs deterministic pre-checks on full document text.
     For PROHIBITED_TERM and NUMERIC_THRESHOLD rules the precheck is authoritative.
@@ -51,7 +52,7 @@ def should_skip_retrieval(state: ComplianceCheckState) -> str:
     return "retrieve"
 
 
-def retrieve_node(state: ComplianceCheckState) -> Dict[str, Any]:
+def retrieve_node(state: ComplianceCheckState) -> dict[str, Any]:
     """
     Multi-phrasing hybrid retrieval for required/conditional clause presence checks.
     Records all searches run so absence can be audited.
@@ -80,7 +81,7 @@ def retrieve_node(state: ComplianceCheckState) -> Dict[str, Any]:
     }
 
 
-def judge_node(state: ComplianceCheckState) -> Dict[str, Any]:
+def judge_node(state: ComplianceCheckState) -> dict[str, Any]:
     """
     Judges candidate text against compliance rule.
     First re-runs precheck on candidate text (in case the prohibited term lives in
@@ -119,7 +120,7 @@ def judge_node(state: ComplianceCheckState) -> Dict[str, Any]:
     }
 
 
-def verify_node(state: ComplianceCheckState) -> Dict[str, Any]:
+def verify_node(state: ComplianceCheckState) -> dict[str, Any]:
     """
     Deterministic evidence gate: confirms verbatim quote exists in the source document.
     Rejected quotes (hallucinations) route verdict to needs_review.
@@ -163,7 +164,7 @@ def verify_node(state: ComplianceCheckState) -> Dict[str, Any]:
     }
 
 
-def record_finding_node(state: ComplianceCheckState) -> Dict[str, Any]:
+def record_finding_node(state: ComplianceCheckState) -> dict[str, Any]:
     """Generates a stable finding ID and computes requires_human_review flag."""
     fid = f"finding-{uuid.uuid4().hex[:10]}"
     requires_review = (

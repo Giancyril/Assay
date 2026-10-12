@@ -1,8 +1,9 @@
-﻿from typing import List, Optional
-from pydantic import BaseModel
+
 from fastapi import APIRouter, HTTPException, status
-from backend.rules.models import RuleSet, ComplianceRule, PrecheckResult
+from pydantic import BaseModel
+
 from backend.rules.engine import rule_engine
+from backend.rules.models import ComplianceRule, PrecheckResult, RuleSet
 from backend.rules.precheck import run_deterministic_precheck
 
 router = APIRouter(prefix="/api/rules", tags=["Rules Engine"])
@@ -10,30 +11,30 @@ router = APIRouter(prefix="/api/rules", tags=["Rules Engine"])
 
 class CreateVersionRequest(BaseModel):
     version: str
-    updated_rules: List[ComplianceRule]
-    description: Optional[str] = None
+    updated_rules: list[ComplianceRule]
+    description: str | None = None
 
 
 class PrecheckRequest(BaseModel):
     candidate_text: str
     rule_id: str
-    ruleset_id: Optional[str] = "ruleset-nda-commercial"
-    version: Optional[str] = None
+    ruleset_id: str | None = "ruleset-nda-commercial"
+    version: str | None = None
 
 
-@router.get("/sets", response_model=List[RuleSet])
+@router.get("/sets", response_model=list[RuleSet])
 async def list_rule_sets():
     """List all registered compliance rule sets (latest active versions)."""
     return rule_engine.list_rule_sets()
 
 
 @router.get("/sets/{ruleset_id}", response_model=RuleSet)
-async def get_rule_set(ruleset_id: str, version: Optional[str] = None):
+async def get_rule_set(ruleset_id: str, version: str | None = None):
     """Get a compliance rule set by ID, optionally specifying version."""
     return rule_engine.get_rule_set(ruleset_id, version=version)
 
 
-@router.get("/sets/{ruleset_id}/versions", response_model=List[str])
+@router.get("/sets/{ruleset_id}/versions", response_model=list[str])
 async def list_rule_set_versions(ruleset_id: str):
     """List all available version tags for a given rule set."""
     return rule_engine.list_versions_for_set(ruleset_id)

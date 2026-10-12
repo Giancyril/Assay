@@ -1,10 +1,9 @@
-﻿import os
-from typing import Tuple
 from fastapi import HTTPException, status
+
 from backend.app.config import settings
-from backend.ingestion.models import ParsedDocument, DocumentFileType
-from backend.ingestion.pdf_parser import parse_pdf
 from backend.ingestion.docx_parser import parse_docx
+from backend.ingestion.models import DocumentFileType, ParsedDocument
+from backend.ingestion.pdf_parser import parse_pdf
 from backend.ingestion.repository import doc_repository
 
 
@@ -57,7 +56,7 @@ def ingest_document_bytes(
     except Exception as e:
         raise HTTPException(
             status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
-            detail=f"Failed to parse document: {str(e)}"
+            detail=f"Failed to parse document: {e!s}"
         )
 
     saved_doc = doc_repository.save_document(parsed_doc, file_bytes)

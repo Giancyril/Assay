@@ -1,8 +1,9 @@
-﻿from typing import List
-from fastapi import APIRouter, UploadFile, File, HTTPException, status
-from backend.ingestion.models import ParsedDocument, DocumentPage
-from backend.ingestion.service import ingest_document_bytes
+
+from fastapi import APIRouter, File, HTTPException, UploadFile, status
+
+from backend.ingestion.models import DocumentPage, ParsedDocument
 from backend.ingestion.repository import doc_repository
+from backend.ingestion.service import ingest_document_bytes
 
 router = APIRouter(prefix="/api/documents", tags=["Documents"])
 
@@ -15,7 +16,7 @@ async def upload_document(file: UploadFile = File(...)):
     return parsed_doc
 
 
-@router.get("", response_model=List[ParsedDocument])
+@router.get("", response_model=list[ParsedDocument])
 async def list_documents():
     """List all ingested documents with metadata and parse status."""
     return doc_repository.list_documents()
@@ -36,7 +37,7 @@ async def get_document_page(doc_id: str, page_num: int):
     doc = doc_repository.get_document(doc_id)
     if not doc:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Document '{doc_id}' not found.")
-    
+
     if page_num < 1 or page_num > len(doc.pages):
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,

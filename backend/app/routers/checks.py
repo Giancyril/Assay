@@ -1,6 +1,7 @@
-﻿from typing import List, Optional, Dict
-from pydantic import BaseModel, Field
+
 from fastapi import APIRouter, HTTPException, status
+from pydantic import BaseModel
+
 from backend.agent.findings import Finding, findings_repository
 from backend.agent.orchestrator import check_document_against_ruleset
 
@@ -9,9 +10,9 @@ router = APIRouter(prefix="/api/checks", tags=["Compliance Checks"])
 
 class RunCheckRequest(BaseModel):
     document_id: str
-    ruleset_id: Optional[str] = "ruleset-nda-commercial"
-    ruleset_version: Optional[str] = None
-    max_concurrency: Optional[int] = 4
+    ruleset_id: str | None = "ruleset-nda-commercial"
+    ruleset_version: str | None = None
+    max_concurrency: int | None = 4
 
 
 class CheckSummaryResponse(BaseModel):
@@ -19,14 +20,14 @@ class CheckSummaryResponse(BaseModel):
     ruleset_id: str
     ruleset_version: str
     total_findings: int
-    counts: Dict[str, int]
-    findings: List[Finding]
+    counts: dict[str, int]
+    findings: list[Finding]
 
 
 class ReviewFindingRequest(BaseModel):
     reviewer_status: str  # "confirmed", "overridden", "not_applicable"
-    reviewer_override_reason: Optional[str] = None
-    reviewed_by: Optional[str] = "compliance_reviewer"
+    reviewer_override_reason: str | None = None
+    reviewed_by: str | None = "compliance_reviewer"
 
 
 @router.post("/run", response_model=CheckSummaryResponse)
@@ -56,7 +57,7 @@ async def run_compliance_check(body: RunCheckRequest):
     )
 
 
-@router.get("/{doc_id}/findings", response_model=List[Finding])
+@router.get("/{doc_id}/findings", response_model=list[Finding])
 async def get_document_findings(doc_id: str):
     """Retrieve all findings for an audited document."""
     findings = findings_repository.get_findings_for_document(doc_id)

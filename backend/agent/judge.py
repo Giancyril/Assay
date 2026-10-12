@@ -1,13 +1,14 @@
-﻿import re
-from typing import Optional, List
+import re
+
 from pydantic import BaseModel, Field
-from backend.rules.models import ComplianceRule, RuleType, Verdict
+
 from backend.app.config import settings
+from backend.rules.models import ComplianceRule, RuleType, Verdict
 
 
 class JudgeVerdict(BaseModel):
     verdict: Verdict
-    verbatim_quote: Optional[str] = Field(
+    verbatim_quote: str | None = Field(
         default=None,
         description="Exact, verbatim excerpt from the document text supporting this verdict."
     )
@@ -47,7 +48,7 @@ def _extract_best_sentence(text: str, keyword: str) -> str:
     return text[:300]
 
 
-def evaluate_with_llm(rule: ComplianceRule, candidate_text: str) -> Optional[JudgeVerdict]:
+def evaluate_with_llm(rule: ComplianceRule, candidate_text: str) -> JudgeVerdict | None:
     """Invokes OpenAI LLM with structured output when API key is configured."""
     if not settings.OPENAI_API_KEY:
         return None

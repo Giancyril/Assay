@@ -1,10 +1,9 @@
-﻿import pytest
 from fastapi.testclient import TestClient
+
 from backend.app.main import app
-from backend.ingestion.service import ingest_document_bytes
 from backend.indexing.chunker import chunk_document_by_structure
 from backend.indexing.retriever import HybridRetriever
-from backend.indexing.service import clause_index_service
+from backend.ingestion.service import ingest_document_bytes
 
 client = TestClient(app)
 
@@ -51,16 +50,16 @@ def create_ingested_test_doc():
 def test_structure_aware_chunking():
     doc = create_ingested_test_doc()
     chunks = chunk_document_by_structure(doc)
-    
+
     assert len(chunks) >= 8, f"Expected at least 8 clauses, got {len(chunks)}"
-    
+
     # Check section numbers and titles
     sec_map = {c.section_number: c.section_title for c in chunks if c.section_number}
     assert "1" in sec_map and "DEFINITIONS" in sec_map["1"].upper()
     assert "3" in sec_map and "TERM" in sec_map["3"].upper()
     assert "6" in sec_map and "GOVERNING LAW" in sec_map["6"].upper()
     assert "8" in sec_map and "NON-SOLICITATION" in sec_map["8"].upper()
-    
+
     # Check offset accuracy: full_text slice must match chunk content
     for c in chunks:
         sliced = doc.full_text[c.char_start_doc:c.char_end_doc]
@@ -75,7 +74,7 @@ def test_retrieval_accuracy_evaluation_before_llm():
     doc = create_ingested_test_doc()
     chunks = chunk_document_by_structure(doc)
     retriever = HybridRetriever(chunks)
-    
+
     test_cases = [
         {
             "query": "governing law State of Delaware and jurisdiction",
@@ -103,29 +102,29 @@ def test_retrieval_accuracy_evaluation_before_llm():
             "description": "Exceptions / Definitions clause"
         }
     ]
-    
+
     rank_1_hits = 0
     reciprocal_ranks = []
-    
+
     for tc in test_cases:
         results = retriever.retrieve(query=tc["query"], top_k=3, alpha=0.5)
         assert len(results) > 0, f"No results for query '{tc['query']}'"
-        
+
         # Check rank of expected section
         found_rank = None
         for rank, res in enumerate(results, start=1):
             if res.chunk.section_number == tc["expected_section"]:
                 found_rank = rank
                 break
-                
+
         assert found_rank is not None, f"Expected section {tc['expected_section']} not found in top 3 for {tc['description']}"
         reciprocal_ranks.append(1.0 / found_rank)
         if found_rank == 1:
             rank_1_hits += 1
-            
+
     recall_at_1 = rank_1_hits / len(test_cases)
     mrr = sum(reciprocal_ranks) / len(test_cases)
-    
+
     # Assert high accuracy for hybrid retrieval
     assert recall_at_1 == 1.0, f"Recall@1 expected 1.0, got {recall_at_1}"
     assert mrr == 1.0, f"MRR expected 1.0, got {mrr}"
@@ -133,18 +132,18 @@ def test_retrieval_accuracy_evaluation_before_llm():
 
 def test_indexing_api_endpoints():
     doc = create_ingested_test_doc()
-    
+
     # 1. Trigger indexing
     idx_res = client.post(f"/api/documents/{doc.id}/index")
     assert idx_res.status_code == 200
     clauses = idx_res.json()
     assert len(clauses) >= 8
-    
+
     # 2. Get clauses
     get_res = client.get(f"/api/documents/{doc.id}/clauses")
     assert get_res.status_code == 200
     assert len(get_res.json()) == len(clauses)
-    
+
     # 3. Search clauses
     search_res = client.post(
         f"/api/documents/{doc.id}/search",

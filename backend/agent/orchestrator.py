@@ -1,13 +1,14 @@
-﻿import asyncio
-from typing import List, Optional
+import asyncio
+
 from fastapi import HTTPException, status
+
+from backend.agent.findings import Finding, findings_repository
+from backend.agent.graph import compliance_graph
+from backend.agent.state import ComplianceCheckState
+from backend.evidence.verifier import EvidenceSpan
 from backend.ingestion.repository import doc_repository
 from backend.rules.engine import rule_engine
 from backend.rules.models import ComplianceRule, Verdict
-from backend.agent.state import ComplianceCheckState
-from backend.agent.graph import compliance_graph
-from backend.agent.findings import Finding, findings_repository
-from backend.evidence.verifier import EvidenceSpan
 
 
 async def execute_single_rule_check(
@@ -68,9 +69,9 @@ async def execute_single_rule_check(
 async def check_document_against_ruleset(
     document_id: str,
     ruleset_id: str = "ruleset-nda-commercial",
-    ruleset_version: Optional[str] = None,
+    ruleset_version: str | None = None,
     max_concurrency: int = 4
-) -> List[Finding]:
+) -> list[Finding]:
     """
     Runs compliance checks in parallel across all rules in a ruleset.
     Bounded by concurrency limit to manage resource usage.
@@ -108,7 +109,7 @@ async def check_document_against_ruleset(
                             rule_type=rule.rule_type,
                             verdict=Verdict.NEEDS_REVIEW,
                             severity=rule.severity,
-                            reasoning=f"Check failed due to internal error: {str(e)}",
+                            reasoning=f"Check failed due to internal error: {e!s}",
                             recommended_action="Retry rule check manually.",
                             confidence=0.0,
                             rule_set_version=ruleset.version

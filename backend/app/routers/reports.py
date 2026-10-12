@@ -1,9 +1,9 @@
-﻿from fastapi import APIRouter, HTTPException, status, Response
-from pydantic import BaseModel
-from typing import Dict, Any
 
-from backend.ingestion.repository import doc_repository
+from fastapi import APIRouter, HTTPException, Response, status
+from pydantic import BaseModel
+
 from backend.agent.findings import findings_repository
+from backend.ingestion.repository import doc_repository
 from backend.reporting.generator import generate_markdown_report, generate_pdf_report
 from backend.rules.models import Verdict
 
@@ -16,7 +16,7 @@ class ReportSummaryResponse(BaseModel):
     total_findings: int
     compliance_score: float
     overall_status: str
-    counts: Dict[str, int]
+    counts: dict[str, int]
     markdown_url: str
     pdf_url: str
 

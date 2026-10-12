@@ -1,10 +1,11 @@
-﻿from datetime import datetime, timezone
-from enum import Enum
-from typing import Dict, Any, List, Optional
+from datetime import UTC, datetime
+from enum import StrEnum
+from typing import Any
+
 from pydantic import BaseModel, Field
 
 
-class DocumentFileType(str, Enum):
+class DocumentFileType(StrEnum):
     PDF = "pdf"
     DOCX = "docx"
 
@@ -25,8 +26,8 @@ class DocumentPage(BaseModel):
     char_start_doc: int
     char_end_doc: int
     is_ocr: bool = False
-    spans: List[TextSpan] = Field(default_factory=list)
-    metadata: Dict[str, Any] = Field(default_factory=dict)
+    spans: list[TextSpan] = Field(default_factory=list)
+    metadata: dict[str, Any] = Field(default_factory=dict)
 
 
 class ParsedDocument(BaseModel):
@@ -38,6 +39,6 @@ class ParsedDocument(BaseModel):
     full_text: str
     page_count: int
     is_ocr: bool = False
-    pages: List[DocumentPage] = Field(default_factory=list)
-    created_at: str = Field(default_factory=lambda: datetime.now(timezone.utc).isoformat())
-    metadata: Dict[str, Any] = Field(default_factory=dict)
+    pages: list[DocumentPage] = Field(default_factory=list)
+    created_at: str = Field(default_factory=lambda: datetime.now(UTC).isoformat())
+    metadata: dict[str, Any] = Field(default_factory=dict)
