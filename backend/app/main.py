@@ -5,6 +5,7 @@ from fastapi import FastAPI, status
 from fastapi.middleware.cors import CORSMiddleware
 from backend.app.config import settings
 from backend.app.database import check_db_health
+from backend.app.routers.documents import router as documents_router
 
 logging.basicConfig(
     level=settings.LOG_LEVEL,
@@ -35,6 +36,9 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+# Mount Routers
+app.include_router(documents_router)
 
 
 @app.get("/api/health", status_code=status.HTTP_200_OK, tags=["Health"])
