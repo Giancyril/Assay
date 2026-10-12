@@ -9,6 +9,7 @@ from backend.app.routers.documents import router as documents_router
 from backend.app.routers.indexing import router as indexing_router
 from backend.app.routers.rules import router as rules_router
 from backend.app.routers.checks import router as checks_router
+from backend.app.routers.reports import router as reports_router
 
 logging.basicConfig(
     level=settings.LOG_LEVEL,
@@ -45,6 +46,7 @@ app.include_router(documents_router)
 app.include_router(indexing_router)
 app.include_router(rules_router)
 app.include_router(checks_router)
+app.include_router(reports_router)
 
 
 @app.get("/api/health", status_code=status.HTTP_200_OK, tags=["Health"])
