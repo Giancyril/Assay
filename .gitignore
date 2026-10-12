@@ -58,7 +58,6 @@ backend/extracted_text/
 # Environment and secrets
 .env
 .env.*
-!.env.example
 
 # Databases
 postgres_data/
