@@ -1,4 +1,4 @@
-﻿export type Verdict = "compliant" | "violation" | "needs_review" | "not_applicable";
+export type Verdict = "compliant" | "violation" | "needs_review" | "not_applicable";
 
 export type Severity = "low" | "medium" | "high" | "critical";
 

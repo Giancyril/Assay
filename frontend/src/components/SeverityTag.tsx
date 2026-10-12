@@ -1,4 +1,4 @@
-﻿import React from "react";
+import React from "react";
 import { Severity } from "../types";
 
 export const SeverityTag: React.FC<{ severity: Severity }> = ({ severity }) => {

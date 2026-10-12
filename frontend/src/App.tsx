@@ -1,10 +1,6 @@
-﻿import React, { useState, useEffect } from "react";
-import { 
-  FileText, ShieldCheck, AlertOctagon, HelpCircle, Eye, 
-  Check, X, Search, BookOpen, Clock, 
-  ChevronRight, RefreshCw, Filter, ExternalLink, ShieldAlert
-} from "lucide-react";
-import { Finding, DocumentItem, Rule, Verdict, Severity } from "./types";
+import React, { useState, useEffect } from "react";
+import { FileText, Check, Search, BookOpen, ShieldAlert } from "lucide-react";
+import type { Finding, DocumentItem, Rule } from "./types";
 import { VerdictBadge } from "./components/VerdictBadge";
 import { SeverityTag } from "./components/SeverityTag";
 import { EvidenceQuote } from "./components/EvidenceQuote";

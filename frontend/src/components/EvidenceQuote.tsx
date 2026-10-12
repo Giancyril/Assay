@@ -1,4 +1,4 @@
-﻿import React from "react";
+import React from "react";
 import { EvidenceQuote as EvidenceQuoteType } from "../types";
 import { CheckCircle2, AlertTriangle } from "lucide-react";
 
