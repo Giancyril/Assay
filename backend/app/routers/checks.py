@@ -1,5 +1,5 @@
 ﻿from typing import List, Optional, Dict
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 from fastapi import APIRouter, HTTPException, status
 from backend.agent.findings import Finding, findings_repository
 from backend.agent.orchestrator import check_document_against_ruleset
@@ -21,6 +21,12 @@ class CheckSummaryResponse(BaseModel):
     total_findings: int
     counts: Dict[str, int]
     findings: List[Finding]
+
+
+class ReviewFindingRequest(BaseModel):
+    reviewer_status: str  # "confirmed", "overridden", "not_applicable"
+    reviewer_override_reason: Optional[str] = None
+    reviewed_by: Optional[str] = "compliance_reviewer"
 
 
 @router.post("/run", response_model=CheckSummaryResponse)
@@ -72,3 +78,35 @@ async def get_single_finding(finding_id: str):
             detail=f"Finding '{finding_id}' not found."
         )
     return finding
+
+
+@router.patch("/findings/{finding_id}/review", response_model=Finding)
+async def review_finding(finding_id: str, body: ReviewFindingRequest):
+    """Reviewer Gate: Allows human compliance analyst to confirm, override, or mark a finding N/A."""
+    valid_statuses = {"pending", "confirmed", "overridden", "not_applicable"}
+    if body.reviewer_status not in valid_statuses:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"Invalid reviewer status '{body.reviewer_status}'. Must be one of: {', '.join(valid_statuses)}"
+        )
+
+    if body.reviewer_status == "overridden" and not body.reviewer_override_reason:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="An override reason is required when overriding a finding."
+        )
+
+    updated = findings_repository.update_finding(
+        finding_id=finding_id,
+        reviewer_status=body.reviewer_status,
+        override_reason=body.reviewer_override_reason,
+        reviewed_by=body.reviewed_by
+    )
+
+    if not updated:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Finding '{finding_id}' not found."
+        )
+
+    return updated

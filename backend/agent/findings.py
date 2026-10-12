@@ -70,7 +70,37 @@ class FindingsRepository:
         return []
 
     def get_finding_by_id(self, finding_id: str) -> Optional[Finding]:
-        return self._all_findings_by_id.get(finding_id)
+        if finding_id in self._all_findings_by_id:
+            return self._all_findings_by_id[finding_id]
+        # Search all document folders on disk if not in cache
+        if os.path.exists(self.base_dir):
+            for entry in os.listdir(self.base_dir):
+                doc_path = os.path.join(self.base_dir, entry, "findings.json")
+                if os.path.exists(doc_path):
+                    self.get_findings_for_document(entry)
+                    if finding_id in self._all_findings_by_id:
+                        return self._all_findings_by_id[finding_id]
+        return None
+
+    def update_finding(
+        self,
+        finding_id: str,
+        reviewer_status: str,
+        override_reason: Optional[str] = None,
+        reviewed_by: Optional[str] = None
+    ) -> Optional[Finding]:
+        finding = self.get_finding_by_id(finding_id)
+        if not finding:
+            return None
+
+        finding.reviewer_status = reviewer_status
+        finding.reviewer_override_reason = override_reason
+        finding.reviewed_by = reviewed_by or "compliance_reviewer"
+        finding.reviewed_at = datetime.now(timezone.utc).isoformat()
+
+        doc_findings = self.get_findings_for_document(finding.document_id)
+        self.save_findings(finding.document_id, doc_findings)
+        return finding
 
 
 findings_repository = FindingsRepository()
