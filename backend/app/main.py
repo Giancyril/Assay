@@ -7,6 +7,7 @@ from backend.app.config import settings
 from backend.app.database import check_db_health
 from backend.app.routers.documents import router as documents_router
 from backend.app.routers.indexing import router as indexing_router
+from backend.app.routers.rules import router as rules_router
 
 logging.basicConfig(
     level=settings.LOG_LEVEL,
@@ -41,6 +42,7 @@ app.add_middleware(
 # Mount Routers
 app.include_router(documents_router)
 app.include_router(indexing_router)
+app.include_router(rules_router)
 
 
 @app.get("/api/health", status_code=status.HTTP_200_OK, tags=["Health"])
