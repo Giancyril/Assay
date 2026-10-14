@@ -28,6 +28,10 @@ class Settings(BaseSettings):
     MAX_UPLOAD_SIZE_MB: int = 25
     ALLOWED_EXTENSIONS: list[str] = ["pdf", "docx"]
 
+    # Security
+    SECRET_KEY: str = Field(default="compliance-agent-dev-secret-change-in-production")
+    AUDIT_HMAC_SECRET: str = Field(default="")
+
     # LLM Settings
     OPENAI_API_KEY: str = Field(default="")
     OPENAI_MODEL: str = "gpt-4o-mini"
@@ -42,3 +46,4 @@ class Settings(BaseSettings):
 
 
 settings = Settings()
+
