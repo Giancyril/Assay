@@ -70,7 +70,8 @@ async def check_document_against_ruleset(
     document_id: str,
     ruleset_id: str = "ruleset-nda-commercial",
     ruleset_version: str | None = None,
-    max_concurrency: int = 4
+    max_concurrency: int = 4,
+    rule_codes: list[str] | None = None,
 ) -> list[Finding]:
     """
     Runs compliance checks in parallel across all rules in a ruleset.
@@ -84,6 +85,10 @@ async def check_document_against_ruleset(
         )
 
     ruleset = rule_engine.get_rule_set(ruleset_id, version=ruleset_version)
+    active_rules = ruleset.rules
+    if rule_codes:
+        active_rules = [r for r in active_rules if r.code in rule_codes]
+
     semaphore = asyncio.Semaphore(max_concurrency)
 
     async def sem_check(rule: ComplianceRule) -> Finding:
@@ -116,9 +121,10 @@ async def check_document_against_ruleset(
                         )
                     await asyncio.sleep(0.5)
 
-    tasks = [sem_check(rule) for rule in ruleset.rules]
+    tasks = [sem_check(rule) for rule in active_rules]
     findings = await asyncio.gather(*tasks)
 
     # Save findings
     findings_repository.save_findings(document_id, list(findings))
     return list(findings)
+
