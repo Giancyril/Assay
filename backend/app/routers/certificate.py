@@ -12,6 +12,30 @@ from backend.certificate.generator import AuditCertificate, generate_certificate
 router = APIRouter(prefix="/api/certificates", tags=["Audit Certificates"])
 
 
+@router.post("/verify", response_model=dict)
+async def verify_audit_certificate(cert: AuditCertificate):
+    """
+    Verify the HMAC integrity of an audit certificate.
+
+    Returns `{"valid": true, "certificate_id": "..."}` if authentic,
+    or `{"valid": false, "reason": "..."}` if the certificate has been tampered with.
+    """
+    is_valid = verify_certificate(cert)
+    if is_valid:
+        return {
+            "valid": True,
+            "certificate_id": cert.certificate_id,
+            "issued_at": cert.issued_at,
+            "document_id": cert.document_id,
+            "overall_status": cert.overall_status,
+            "message": "Certificate integrity verified - payload has not been tampered with.",
+        }
+    return {
+        "valid": False,
+        "certificate_id": cert.certificate_id,
+        "reason": "HMAC signature mismatch - certificate payload has been modified after issuance.",
+    }
+
 @router.post("/{doc_id}", response_model=AuditCertificate, status_code=status.HTTP_201_CREATED)
 async def issue_certificate(
     doc_id: str,
@@ -41,26 +65,3 @@ async def issue_certificate(
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(exc))
 
 
-@router.post("/verify", response_model=dict)
-async def verify_audit_certificate(cert: AuditCertificate):
-    """
-    Verify the HMAC integrity of an audit certificate.
-
-    Returns `{"valid": true, "certificate_id": "..."}` if authentic,
-    or `{"valid": false, "reason": "..."}` if the certificate has been tampered with.
-    """
-    is_valid = verify_certificate(cert)
-    if is_valid:
-        return {
-            "valid": True,
-            "certificate_id": cert.certificate_id,
-            "issued_at": cert.issued_at,
-            "document_id": cert.document_id,
-            "overall_status": cert.overall_status,
-            "message": "Certificate integrity verified — payload has not been tampered with.",
-        }
-    return {
-        "valid": False,
-        "certificate_id": cert.certificate_id,
-        "reason": "HMAC signature mismatch — certificate payload has been modified after issuance.",
-    }

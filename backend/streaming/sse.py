@@ -62,7 +62,7 @@ async def stream_compliance_check(
             "document_id": document_id,
             "ruleset_id": ruleset_id,
             "total_rules": total,
-            "message": f"Starting compliance audit — {total} rules to evaluate",
+            "message": f"Starting compliance audit â€” {total} rules to evaluate",
             "progress": 0.0,
         })
 
@@ -139,5 +139,5 @@ async def stream_compliance_check(
             "document_id": document_id,
             "message": f"Audit stream error: {exc}",
             "progress": 0.0,
-        })
-
+        })
+

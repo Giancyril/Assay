@@ -67,6 +67,7 @@ class RuleSet(BaseModel):
     rules: list[ComplianceRule] = Field(default_factory=list)
     is_default: bool = True
     created_at: str = Field(default_factory=lambda: datetime.now(UTC).isoformat())
+    updated_at: str | None = None
 
 
 class PrecheckResult(BaseModel):

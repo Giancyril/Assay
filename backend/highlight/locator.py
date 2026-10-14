@@ -1,5 +1,5 @@
 """
-Visual Highlight Locator — Feature 2: Visual Document Highlighting & Jump-to-Source.
+Visual Highlight Locator â€” Feature 2: Visual Document Highlighting & Jump-to-Source.
 
 Maps each compliance finding to HighlightAnnotations with page offsets, semantic
 colors, tooltip summaries, and PDF jump-links that the frontend can consume to
@@ -16,7 +16,7 @@ from backend.ingestion.repository import doc_repository
 
 def _build_tooltip(finding: Finding) -> str:
     lines = [
-        f"Rule: {finding.rule_code} — {finding.rule_name}",
+        f"Rule: {finding.rule_code} â€” {finding.rule_name}",
         f"Verdict: {finding.verdict.upper()}",
         f"Severity: {finding.severity.upper()}",
     ]
@@ -24,7 +24,7 @@ def _build_tooltip(finding: Finding) -> str:
         # Truncate to 200 chars for tooltip
         excerpt = finding.reasoning[:200]
         if len(finding.reasoning) > 200:
-            excerpt += "…"
+            excerpt += "â€¦"
         lines.append(f"Analysis: {excerpt}")
     if finding.recommended_action:
         lines.append(f"Action: {finding.recommended_action[:150]}")
@@ -102,4 +102,4 @@ def build_highlight_map(
         total_annotations=len(annotations),
         annotations=annotations,
         page_index=page_index,
-    )
+    )

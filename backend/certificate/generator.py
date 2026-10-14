@@ -30,7 +30,7 @@ from backend.app.config import settings
 from backend.ingestion.repository import doc_repository
 from backend.rules.models import Verdict
 
-# HMAC key — in production, inject via environment variable; fall back to project secret.
+# HMAC key â€” in production, inject via environment variable; fall back to project secret.
 _HMAC_KEY: bytes = (getattr(settings, "AUDIT_HMAC_SECRET", None) or settings.SECRET_KEY).encode("utf-8")
 
 
@@ -185,4 +185,4 @@ def verify_certificate(cert: AuditCertificate) -> bool:
 
     hash_match = hmac.compare_digest(expected_hash, cert.payload_sha256)
     sig_match = hmac.compare_digest(expected_sig, cert.hmac_signature)
-    return hash_match and sig_match
+    return hash_match and sig_match

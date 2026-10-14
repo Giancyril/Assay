@@ -29,13 +29,13 @@ async def stream_audit(
     Event types emitted:
       - **start**: Audit begun, total rule count included
       - **rule_start**: Named rule is being evaluated
-      - **rule_complete**: Rule evaluated — includes full Finding payload
+      - **rule_complete**: Rule evaluated â€” includes full Finding payload
       - **rule_error**: Rule evaluation failed (non-fatal, audit continues)
       - **complete**: All rules evaluated, summary counts included
       - **error**: Fatal stream error
 
     Each event carries: type, timestamp, rule_code, finding (on complete),
-    progress (0.0–1.0), and a human-readable message.
+    progress (0.0â€“1.0), and a human-readable message.
     """
     generator = stream_compliance_check(
         document_id=doc_id,
@@ -52,4 +52,4 @@ async def stream_audit(
             "X-Accel-Buffering": "no",  # Disable nginx buffering for SSE
             "Connection": "keep-alive",
         },
-    )
+    )
