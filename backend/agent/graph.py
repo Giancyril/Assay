@@ -33,13 +33,10 @@ def precheck_node(state: ComplianceCheckState) -> dict[str, Any]:
                 else "No action required."
             ),
             "confidence": precheck.confidence,
-            "iteration_count": state.iteration_count + 1
+            "iteration_count": state.iteration_count + 1,
         }
 
-    return {
-        "precheck_result": None,
-        "iteration_count": state.iteration_count + 1
-    }
+    return {"precheck_result": None, "iteration_count": state.iteration_count + 1}
 
 
 def should_skip_retrieval(state: ComplianceCheckState) -> str:
@@ -62,23 +59,15 @@ def retrieve_node(state: ComplianceCheckState) -> dict[str, Any]:
     seen_ids = set()
     searches_run = list(state.searches_run)
 
-    for q in queries[:state.max_iterations]:
+    for q in queries[: state.max_iterations]:
         searches_run.append(f"hybrid_search('{q}')")
-        results = clause_index_service.search_document(
-            doc_id=state.document_id,
-            query=q,
-            top_k=2
-        )
+        results = clause_index_service.search_document(doc_id=state.document_id, query=q, top_k=2)
         for r in results:
             if r.chunk.id not in seen_ids:
                 seen_ids.add(r.chunk.id)
                 all_chunks.append(r.chunk)
 
-    return {
-        "retrieved_chunks": all_chunks,
-        "searches_run": searches_run,
-        "iteration_count": state.iteration_count + 1
-    }
+    return {"retrieved_chunks": all_chunks, "searches_run": searches_run, "iteration_count": state.iteration_count + 1}
 
 
 def judge_node(state: ComplianceCheckState) -> dict[str, Any]:
@@ -104,7 +93,7 @@ def judge_node(state: ComplianceCheckState) -> dict[str, Any]:
                 else "No action required."
             ),
             "confidence": local_precheck.confidence,
-            "iteration_count": state.iteration_count + 1
+            "iteration_count": state.iteration_count + 1,
         }
 
     # LLM / heuristic judgment
@@ -116,7 +105,7 @@ def judge_node(state: ComplianceCheckState) -> dict[str, Any]:
         "reasoning": verdict_obj.reasoning,
         "recommended_action": verdict_obj.recommended_action,
         "confidence": verdict_obj.confidence,
-        "iteration_count": state.iteration_count + 1
+        "iteration_count": state.iteration_count + 1,
     }
 
 
@@ -132,7 +121,7 @@ def verify_node(state: ComplianceCheckState) -> dict[str, Any]:
         return {
             "evidence_verified": False,
             "requires_human_review": state.verdict == Verdict.NEEDS_REVIEW,
-            "iteration_count": state.iteration_count + 1
+            "iteration_count": state.iteration_count + 1,
         }
 
     for page in doc.pages:
@@ -140,7 +129,7 @@ def verify_node(state: ComplianceCheckState) -> dict[str, Any]:
             verbatim_quote=quote,
             page_text=page.text,
             page_number=page.page_number,
-            char_offset_in_doc=page.char_start_doc
+            char_offset_in_doc=page.char_start_doc,
         )
         if verified and span:
             return {
@@ -150,7 +139,7 @@ def verify_node(state: ComplianceCheckState) -> dict[str, Any]:
                 "char_end": span.char_end,
                 "evidence_verified": True,
                 "rejection_reason": None,
-                "iteration_count": state.iteration_count + 1
+                "iteration_count": state.iteration_count + 1,
             }
 
     # Quote not found in source — hallucination rejection
@@ -160,7 +149,7 @@ def verify_node(state: ComplianceCheckState) -> dict[str, Any]:
         "verdict": Verdict.NEEDS_REVIEW,
         "reasoning": f"Evidence quote could not be verified in source. Original assessment: {state.reasoning}",
         "requires_human_review": True,
-        "iteration_count": state.iteration_count + 1
+        "iteration_count": state.iteration_count + 1,
     }
 
 
@@ -172,10 +161,7 @@ def record_finding_node(state: ComplianceCheckState) -> dict[str, Any]:
         or state.confidence < 0.70
         or (not state.evidence_verified and state.verdict != Verdict.COMPLIANT)
     )
-    return {
-        "finding_id": fid,
-        "requires_human_review": requires_review
-    }
+    return {"finding_id": fid, "requires_human_review": requires_review}
 
 
 def build_compliance_check_graph():
@@ -190,14 +176,7 @@ def build_compliance_check_graph():
 
     graph.set_entry_point("precheck")
 
-    graph.add_conditional_edges(
-        "precheck",
-        should_skip_retrieval,
-        {
-            "verify": "verify",
-            "retrieve": "retrieve"
-        }
-    )
+    graph.add_conditional_edges("precheck", should_skip_retrieval, {"verify": "verify", "retrieve": "retrieve"})
 
     graph.add_edge("retrieve", "judge")
     graph.add_edge("judge", "verify")

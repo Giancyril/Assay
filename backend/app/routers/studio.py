@@ -6,8 +6,8 @@ import. Users can build domain-specific rulesets (HIPAA, SOC-2, custom NDA)
 without touching source code, then run compliance checks against them via the
 standard /api/checks/run endpoint with the custom ruleset_id.
 """
-from fastapi import APIRouter, HTTPException, UploadFile, File, status
-from pydantic import BaseModel
+
+from fastapi import APIRouter, File, HTTPException, UploadFile, status
 
 from backend.rules.models import RuleSet
 from backend.rules.studio import (

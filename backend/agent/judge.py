@@ -9,15 +9,10 @@ from backend.rules.models import ComplianceRule, RuleType, Verdict
 class JudgeVerdict(BaseModel):
     verdict: Verdict
     verbatim_quote: str | None = Field(
-        default=None,
-        description="Exact, verbatim excerpt from the document text supporting this verdict."
+        default=None, description="Exact, verbatim excerpt from the document text supporting this verdict."
     )
-    reasoning: str = Field(
-        description="Concise legal and compliance reasoning."
-    )
-    recommended_action: str = Field(
-        description="Actionable redline, addition, deletion, or reviewer next step."
-    )
+    reasoning: str = Field(description="Concise legal and compliance reasoning.")
+    recommended_action: str = Field(description="Actionable redline, addition, deletion, or reviewer next step.")
     confidence: float = Field(ge=0.0, le=1.0)
 
 
@@ -54,6 +49,7 @@ def evaluate_with_llm(rule: ComplianceRule, candidate_text: str) -> JudgeVerdict
         return None
     try:
         from langchain_openai import ChatOpenAI
+
         llm = ChatOpenAI(model=settings.OPENAI_MODEL, api_key=settings.OPENAI_API_KEY, temperature=0.0)
         structured_llm = llm.with_structured_output(JudgeVerdict)
         prompt = f"""{JUDGE_SYSTEM_PROMPT}
@@ -65,7 +61,7 @@ Type: {rule.rule_type}
 Severity: {rule.severity}
 Description: {rule.description}
 Parameters: {rule.parameters.model_dump_json()}
-Guidance: {rule.guidance or 'None'}
+Guidance: {rule.guidance or "None"}
 
 <UNTRUSTED_DOCUMENT_CLAUSE>
 {candidate_text}
@@ -88,7 +84,7 @@ def evaluate_heuristically(rule: ComplianceRule, candidate_text: str) -> JudgeVe
             verbatim_quote=None,
             reasoning=f"No relevant text found for rule {rule.code} ({rule.name}). Absence requires human verification.",
             recommended_action=f"Manually confirm whether {rule.name} is omitted from the agreement.",
-            confidence=0.60
+            confidence=0.60,
         )
 
     # ── 1. PROHIBITED_TERM ──────────────────────────────────────────────────
@@ -110,7 +106,7 @@ def evaluate_heuristically(rule: ComplianceRule, candidate_text: str) -> JudgeVe
                     verbatim_quote=quote,
                     reasoning=f"Prohibited term '{m.group(0)}' detected in clause, violating rule {rule.code} ({rule.name}).",
                     recommended_action=f"Remove or strike the clause containing '{m.group(0)}'.",
-                    confidence=1.0
+                    confidence=1.0,
                 )
         # No prohibited term found → compliant
         return JudgeVerdict(
@@ -118,7 +114,7 @@ def evaluate_heuristically(rule: ComplianceRule, candidate_text: str) -> JudgeVe
             verbatim_quote=None,
             reasoning=f"No prohibited terms detected for rule {rule.code}.",
             recommended_action="No action required.",
-            confidence=0.92
+            confidence=0.92,
         )
 
     # ── 2. REQUIRED_CLAUSE ──────────────────────────────────────────────────
@@ -126,7 +122,8 @@ def evaluate_heuristically(rule: ComplianceRule, candidate_text: str) -> JudgeVe
         required = rule.parameters.required_elements or []
         if required:
             missing = [
-                elem for elem in required
+                elem
+                for elem in required
                 if not re.search(r"\b" + re.escape(elem.split()[0]), candidate_text, re.IGNORECASE)
             ]
             if len(missing) == 0:
@@ -138,7 +135,7 @@ def evaluate_heuristically(rule: ComplianceRule, candidate_text: str) -> JudgeVe
                     verbatim_quote=quote,
                     reasoning=f"All mandatory elements ({', '.join(required)}) confirmed for rule {rule.code}.",
                     recommended_action="No revision needed.",
-                    confidence=0.94
+                    confidence=0.94,
                 )
             elif len(missing) == len(required):
                 return JudgeVerdict(
@@ -146,7 +143,7 @@ def evaluate_heuristically(rule: ComplianceRule, candidate_text: str) -> JudgeVe
                     verbatim_quote=None,
                     reasoning=f"Required clause elements ({', '.join(required)}) not detected. Manual review needed.",
                     recommended_action=f"Insert standard {rule.name} clause into the agreement.",
-                    confidence=0.65
+                    confidence=0.65,
                 )
             else:
                 first_found = next((e.split()[0] for e in required if e not in missing), "")
@@ -156,7 +153,7 @@ def evaluate_heuristically(rule: ComplianceRule, candidate_text: str) -> JudgeVe
                     verbatim_quote=quote,
                     reasoning=f"Clause partially satisfies rule {rule.code} but missing: {', '.join(missing)}.",
                     recommended_action=f"Update clause to explicitly include: {', '.join(missing)}.",
-                    confidence=0.74
+                    confidence=0.74,
                 )
 
         # No required_elements specified — check approved_values (e.g. Governing Law)
@@ -169,7 +166,7 @@ def evaluate_heuristically(rule: ComplianceRule, candidate_text: str) -> JudgeVe
                         verbatim_quote=quote,
                         reasoning=f"Approved jurisdiction/value '{val}' confirmed for rule {rule.code}.",
                         recommended_action="No changes needed.",
-                        confidence=0.96
+                        confidence=0.96,
                     )
             # Governing law clause present but not approved jurisdiction
             if re.search(r"\b(governing law|laws of|applicable law)\b", candidate_text, re.IGNORECASE):
@@ -179,14 +176,14 @@ def evaluate_heuristically(rule: ComplianceRule, candidate_text: str) -> JudgeVe
                     verbatim_quote=first_line[:300] if first_line else None,
                     reasoning=f"Governing jurisdiction not in approved list ({', '.join(rule.parameters.approved_values)}).",
                     recommended_action="Amend to designate an approved jurisdiction (e.g., State of Delaware).",
-                    confidence=0.80
+                    confidence=0.80,
                 )
             return JudgeVerdict(
                 verdict=Verdict.NEEDS_REVIEW,
                 verbatim_quote=None,
                 reasoning=f"No governing law clause found for rule {rule.code}.",
                 recommended_action="Insert a governing law clause designating an approved jurisdiction.",
-                confidence=0.65
+                confidence=0.65,
             )
 
     # ── 3. NUMERIC_THRESHOLD — already handled by precheck; fallback ────────
@@ -196,7 +193,7 @@ def evaluate_heuristically(rule: ComplianceRule, candidate_text: str) -> JudgeVe
             verbatim_quote=None,
             reasoning=f"Numeric threshold evaluation for {rule.code} requires deterministic precheck or LLM analysis.",
             recommended_action="Verify numeric values manually.",
-            confidence=0.65
+            confidence=0.65,
         )
 
     # ── 4. CONDITIONAL / Default fallback ───────────────────────────────────
@@ -206,7 +203,7 @@ def evaluate_heuristically(rule: ComplianceRule, candidate_text: str) -> JudgeVe
         verbatim_quote=first_line[:300] if first_line else None,
         reasoning=f"Conditional rule {rule.code} requires human review to verify logic.",
         recommended_action="Route to legal counsel for conditional clause evaluation.",
-        confidence=0.68
+        confidence=0.68,
     )
 
 

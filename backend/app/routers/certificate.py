@@ -5,6 +5,7 @@ Issues tamper-evident audit certificates for completed compliance checks and
 exposes a verification endpoint so third parties can confirm authenticity
 without possessing the HMAC key (via the public payload_sha256).
 """
+
 from fastapi import APIRouter, HTTPException, status
 
 from backend.certificate.generator import AuditCertificate, generate_certificate, verify_certificate
@@ -36,6 +37,7 @@ async def verify_audit_certificate(cert: AuditCertificate):
         "reason": "HMAC signature mismatch - certificate payload has been modified after issuance.",
     }
 
+
 @router.post("/{doc_id}", response_model=AuditCertificate, status_code=status.HTTP_201_CREATED)
 async def issue_certificate(
     doc_id: str,
@@ -63,5 +65,3 @@ async def issue_certificate(
         return cert
     except ValueError as exc:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(exc))
-
-

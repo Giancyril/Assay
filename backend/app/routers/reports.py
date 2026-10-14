@@ -1,4 +1,3 @@
-
 from fastapi import APIRouter, HTTPException, Response, status
 from pydantic import BaseModel
 
@@ -26,16 +25,13 @@ async def get_report_summary(doc_id: str):
     """Returns metadata summary of the compliance report with download links."""
     doc = doc_repository.get_document(doc_id)
     if not doc:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail=f"Document '{doc_id}' not found."
-        )
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Document '{doc_id}' not found.")
 
     findings = findings_repository.get_findings_for_document(doc_id)
     if not findings:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
-            detail=f"No findings recorded for document '{doc_id}'. Please run a compliance check first."
+            detail=f"No findings recorded for document '{doc_id}'. Please run a compliance check first.",
         )
 
     total = len(findings)
@@ -63,10 +59,10 @@ async def get_report_summary(doc_id: str):
             "violation": violations,
             "needs_review": needs_review,
             "compliant": compliant,
-            "not_applicable": not_app
+            "not_applicable": not_app,
         },
         markdown_url=f"/api/reports/{doc.id}/markdown",
-        pdf_url=f"/api/reports/{doc.id}/pdf"
+        pdf_url=f"/api/reports/{doc.id}/pdf",
     )
 
 
@@ -75,23 +71,20 @@ async def get_markdown_report(doc_id: str):
     """Downloads or displays the Markdown compliance audit report."""
     doc = doc_repository.get_document(doc_id)
     if not doc:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail=f"Document '{doc_id}' not found."
-        )
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Document '{doc_id}' not found.")
 
     findings = findings_repository.get_findings_for_document(doc_id)
     if not findings:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
-            detail=f"No findings recorded for document '{doc_id}'. Please run a compliance check first."
+            detail=f"No findings recorded for document '{doc_id}'. Please run a compliance check first.",
         )
 
     md_content = generate_markdown_report(doc, findings)
     return Response(
         content=md_content,
         media_type="text/markdown",
-        headers={"Content-Disposition": f"inline; filename=audit_{doc.id}.md"}
+        headers={"Content-Disposition": f"inline; filename=audit_{doc.id}.md"},
     )
 
 
@@ -100,21 +93,18 @@ async def get_pdf_report(doc_id: str):
     """Generates and downloads the executive PDF compliance report."""
     doc = doc_repository.get_document(doc_id)
     if not doc:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail=f"Document '{doc_id}' not found."
-        )
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Document '{doc_id}' not found.")
 
     findings = findings_repository.get_findings_for_document(doc_id)
     if not findings:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
-            detail=f"No findings recorded for document '{doc_id}'. Please run a compliance check first."
+            detail=f"No findings recorded for document '{doc_id}'. Please run a compliance check first.",
         )
 
     pdf_bytes = generate_pdf_report(doc, findings)
     return Response(
         content=pdf_bytes,
         media_type="application/pdf",
-        headers={"Content-Disposition": f"inline; filename=audit_{doc.id}.pdf"}
+        headers={"Content-Disposition": f"inline; filename=audit_{doc.id}.pdf"},
     )

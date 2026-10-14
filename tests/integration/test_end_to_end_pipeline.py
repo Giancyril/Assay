@@ -47,8 +47,7 @@ def test_full_pipeline_with_adversarial_prompt_injection():
     # 1. Upload Document via API
     pdf_bytes = create_adversarial_test_pdf()
     upload_response = client.post(
-        "/api/documents/upload",
-        files={"file": ("adversarial_test_nda.pdf", pdf_bytes, "application/pdf")}
+        "/api/documents/upload", files={"file": ("adversarial_test_nda.pdf", pdf_bytes, "application/pdf")}
     )
     assert upload_response.status_code == 201
     doc_data = upload_response.json()
@@ -64,8 +63,7 @@ def test_full_pipeline_with_adversarial_prompt_injection():
 
     # 3. Run Compliance Checks
     check_response = client.post(
-        "/api/checks/run",
-        json={"document_id": doc_id, "ruleset_id": "ruleset-nda-commercial"}
+        "/api/checks/run", json={"document_id": doc_id, "ruleset_id": "ruleset-nda-commercial"}
     )
     assert check_response.status_code == 200
     check_data = check_response.json()
@@ -88,25 +86,20 @@ def test_full_pipeline_with_adversarial_prompt_injection():
 
     # Test invalid reviewer status rejection
     invalid_patch = client.patch(
-        f"/api/checks/findings/{finding_id}/review",
-        json={"reviewer_status": "invalid_choice"}
+        f"/api/checks/findings/{finding_id}/review", json={"reviewer_status": "invalid_choice"}
     )
     assert invalid_patch.status_code == 400
 
     # Test override without explanation rejection
     missing_reason_patch = client.patch(
-        f"/api/checks/findings/{finding_id}/review",
-        json={"reviewer_status": "overridden"}
+        f"/api/checks/findings/{finding_id}/review", json={"reviewer_status": "overridden"}
     )
     assert missing_reason_patch.status_code == 400
 
     # Valid reviewer confirmation
     confirm_patch = client.patch(
         f"/api/checks/findings/{finding_id}/review",
-        json={
-            "reviewer_status": "confirmed",
-            "reviewed_by": "lead_compliance_officer"
-        }
+        json={"reviewer_status": "confirmed", "reviewed_by": "lead_compliance_officer"},
     )
     assert confirm_patch.status_code == 200
     confirmed_data = confirm_patch.json()

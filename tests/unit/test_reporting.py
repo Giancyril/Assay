@@ -14,6 +14,7 @@ def audited_doc_and_findings():
     """Runs a full audit once for reporting tests."""
     doc = create_audit_test_doc()
     import asyncio
+
     findings = asyncio.run(check_document_against_ruleset(doc.id, "ruleset-nda-commercial"))
     return doc, findings
 
@@ -62,7 +63,9 @@ def test_reports_api_markdown_endpoint(audited_doc_and_findings):
     assert response.status_code == 200
     assert "text/markdown" in response.headers["content-type"]
     assert "# Contract Compliance Audit Report" in response.text
-    assert "attachment" in response.headers.get("content-disposition", "") or "inline" in response.headers.get("content-disposition", "")
+    assert "attachment" in response.headers.get("content-disposition", "") or "inline" in response.headers.get(
+        "content-disposition", ""
+    )
 
 
 def test_reports_api_pdf_endpoint(audited_doc_and_findings):

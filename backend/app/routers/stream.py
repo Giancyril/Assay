@@ -6,6 +6,7 @@ and runs the compliance check in streaming mode, emitting live progress
 events as each rule is evaluated. The frontend connects with EventSource
 to render a live progress bar and append findings as they arrive.
 """
+
 from fastapi import APIRouter, Query
 from fastapi.responses import StreamingResponse
 
@@ -52,4 +53,4 @@ async def stream_audit(
             "X-Accel-Buffering": "no",  # Disable nginx buffering for SSE
             "Connection": "keep-alive",
         },
-    )
+    )

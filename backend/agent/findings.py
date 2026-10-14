@@ -84,11 +84,7 @@ class FindingsRepository:
         return None
 
     def update_finding(
-        self,
-        finding_id: str,
-        reviewer_status: str,
-        override_reason: str | None = None,
-        reviewed_by: str | None = None
+        self, finding_id: str, reviewer_status: str, override_reason: str | None = None, reviewed_by: str | None = None
     ) -> Finding | None:
         finding = self.get_finding_by_id(finding_id)
         if not finding:

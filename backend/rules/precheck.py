@@ -43,7 +43,7 @@ def check_prohibited_terms(text: str, rule: ComplianceRule) -> PrecheckResult | 
             evidence_quote=quote,
             matched_term=matched_word,
             confidence=1.0,
-            reasoning=f"Prohibited term '{matched_word}' detected matching rule {rule.code} ({rule.name})."
+            reasoning=f"Prohibited term '{matched_word}' detected matching rule {rule.code} ({rule.name}).",
         )
     return None
 
@@ -52,9 +52,7 @@ def check_numeric_duration_threshold(text: str, rule: ComplianceRule) -> Prechec
     """Deterministically checks confidentiality term duration vs maximum permissible threshold."""
     # 1. Check perpetual duration
     perpetual_match = re.search(
-        r"\b(in perpetuity|indefinite(ly)?|survive forever|without limitation in time)\b",
-        text,
-        re.IGNORECASE
+        r"\b(in perpetuity|indefinite(ly)?|survive forever|without limitation in time)\b", text, re.IGNORECASE
     )
     if perpetual_match:
         if rule.parameters.allow_perpetual is False:
@@ -65,20 +63,18 @@ def check_numeric_duration_threshold(text: str, rule: ComplianceRule) -> Prechec
                 evidence_quote=quote,
                 matched_term=perpetual_match.group(0),
                 confidence=1.0,
-                reasoning=f"Clause imposes perpetual/indefinite duration ({perpetual_match.group(0)}), which violates policy cap."
+                reasoning=f"Clause imposes perpetual/indefinite duration ({perpetual_match.group(0)}), which violates policy cap.",
             )
 
     # 2. Extract numeric duration (e.g., 'three (3) years', '5 years', '36 months')
     num_match = re.search(
         r"\b(?:expire|last|term|remain in effect|period of)\s+(?:for\s+)?(?:[a-zA-Z]+\s+\()?(\d+)\)?\s+(years?|months?)\b",
         text,
-        re.IGNORECASE
+        re.IGNORECASE,
     )
     if not num_match:
         num_match = re.search(
-            r"\b(?:[a-zA-Z]+\s+\()?(\d+)\)?\s+(years?|months?)\s+(?:from|following|after|of)\b",
-            text,
-            re.IGNORECASE
+            r"\b(?:[a-zA-Z]+\s+\()?(\d+)\)?\s+(years?|months?)\s+(?:from|following|after|of)\b", text, re.IGNORECASE
         )
 
     if num_match and rule.parameters.max_threshold is not None:
@@ -97,7 +93,7 @@ def check_numeric_duration_threshold(text: str, rule: ComplianceRule) -> Prechec
                 evidence_quote=quote,
                 matched_term=num_match.group(0),
                 confidence=0.98,
-                reasoning=f"Confidentiality duration of {val} {unit} ({months} months) exceeds maximum allowed threshold of {max_months} months."
+                reasoning=f"Confidentiality duration of {val} {unit} ({months} months) exceeds maximum allowed threshold of {max_months} months.",
             )
         else:
             return PrecheckResult(
@@ -106,7 +102,7 @@ def check_numeric_duration_threshold(text: str, rule: ComplianceRule) -> Prechec
                 evidence_quote=quote,
                 matched_term=num_match.group(0),
                 confidence=0.95,
-                reasoning=f"Confidentiality duration of {val} {unit} ({months} months) is within acceptable threshold of {max_months} months."
+                reasoning=f"Confidentiality duration of {val} {unit} ({months} months) is within acceptable threshold of {max_months} months.",
             )
 
     return None
@@ -117,7 +113,7 @@ def check_numeric_notice_threshold(text: str, rule: ComplianceRule) -> PrecheckR
     notice_match = re.search(
         r"\b(?:[a-zA-Z]+\s+\()?(\d+)\)?\s+days?(?:['\u2019])?\s*(?:prior\s+)?(?:written\s+)?notice\b",
         text,
-        re.IGNORECASE
+        re.IGNORECASE,
     )
     if notice_match and rule.parameters.min_threshold is not None:
         days = int(notice_match.group(1))
@@ -131,7 +127,7 @@ def check_numeric_notice_threshold(text: str, rule: ComplianceRule) -> PrecheckR
                 evidence_quote=quote,
                 matched_term=notice_match.group(0),
                 confidence=0.98,
-                reasoning=f"Notice period of {days} days is below required minimum threshold of {min_days} days."
+                reasoning=f"Notice period of {days} days is below required minimum threshold of {min_days} days.",
             )
         else:
             return PrecheckResult(
@@ -140,7 +136,7 @@ def check_numeric_notice_threshold(text: str, rule: ComplianceRule) -> PrecheckR
                 evidence_quote=quote,
                 matched_term=notice_match.group(0),
                 confidence=0.95,
-                reasoning=f"Notice period of {days} days meets required minimum threshold of {min_days} days."
+                reasoning=f"Notice period of {days} days meets required minimum threshold of {min_days} days.",
             )
 
     return None

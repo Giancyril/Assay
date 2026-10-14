@@ -17,10 +17,7 @@ class ClauseIndexService:
         """Extracts structure-aware clauses and builds hybrid search index for a document."""
         doc = doc_repository.get_document(doc_id)
         if not doc:
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
-                detail=f"Document '{doc_id}' not found."
-            )
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Document '{doc_id}' not found.")
 
         chunks = chunk_document_by_structure(doc)
         self._document_clauses[doc_id] = chunks
@@ -33,13 +30,7 @@ class ClauseIndexService:
             return self.index_document(doc_id)
         return self._document_clauses[doc_id]
 
-    def search_document(
-        self,
-        doc_id: str,
-        query: str,
-        top_k: int = 5,
-        alpha: float = 0.5
-    ) -> list[RetrievalResult]:
+    def search_document(self, doc_id: str, query: str, top_k: int = 5, alpha: float = 0.5) -> list[RetrievalResult]:
         """Performs hybrid retrieval against a document's indexed clauses."""
         if doc_id not in self._document_retrievers:
             self.index_document(doc_id)

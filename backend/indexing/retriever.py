@@ -26,7 +26,7 @@ def compute_deterministic_pseudo_embedding(text: str, dim: int = 128) -> list[fl
         vec[h1] += 1.0
         # bigram
         if i + 1 < len(tokens):
-            bigram = f"{tokens[i]}_{tokens[i+1]}"
+            bigram = f"{tokens[i]}_{tokens[i + 1]}"
             h2 = int(hashlib.md5(bigram.encode("utf-8")).hexdigest(), 16) % dim
             vec[h2] += 1.5
 
@@ -50,6 +50,7 @@ class HybridRetriever:
     Hybrid retriever combining full-text search (exact legal terminology & BM25)
     with dense semantic vector similarity.
     """
+
     def __init__(self, chunks: list[ClauseChunk]):
         self.chunks = chunks
         self._doc_tokens: dict[str, list[str]] = {}
@@ -118,12 +119,7 @@ class HybridRetriever:
             scores[c.id] = sim
         return scores
 
-    def retrieve(
-        self,
-        query: str,
-        top_k: int = 5,
-        alpha: float = 0.5
-    ) -> list[RetrievalResult]:
+    def retrieve(self, query: str, top_k: int = 5, alpha: float = 0.5) -> list[RetrievalResult]:
         """
         Runs hybrid retrieval combining vector search and FTS.
         alpha=1.0 is vector-only, alpha=0.0 is FTS-only, alpha=0.5 is balanced.
@@ -146,7 +142,7 @@ class HybridRetriever:
                     vector_score=round(v_score, 4),
                     fts_score=round(f_score, 4),
                     combined_score=round(combined, 4),
-                    match_type="hybrid" if f_score > 0 and v_score > 0 else ("fts" if f_score > 0 else "vector")
+                    match_type="hybrid" if f_score > 0 and v_score > 0 else ("fts" if f_score > 0 else "vector"),
                 )
             )
 

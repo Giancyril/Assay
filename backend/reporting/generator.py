@@ -11,7 +11,7 @@ def generate_markdown_report(
     doc: ParsedDocument,
     findings: list[Finding],
     ruleset_name: str = "Commercial NDA Standard Policy",
-    ruleset_version: str = "1.0.0"
+    ruleset_version: str = "1.0.0",
 ) -> str:
     """Generates an executive-ready GitHub-flavored Markdown compliance audit report."""
     total = len(findings)
@@ -43,16 +43,28 @@ def generate_markdown_report(
     md.append("## Executive Summary\n")
     md.append("| Outcome | Count | % of Rules | Action Required |")
     md.append("| :--- | :---: | :---: | :--- |")
-    md.append(f"| **Violations** | {len(violations)} | {round(len(violations)/total*100, 1) if total else 0}% | Immediate redline / strike required |")
-    md.append(f"| **Needs Review** | {len(needs_review)} | {round(len(needs_review)/total*100, 1) if total else 0}% | Legal counsel / reviewer sign-off needed |")
-    md.append(f"| **Compliant** | {len(compliant)} | {round(len(compliant)/total*100, 1) if total else 0}% | Accepted as drafted |")
+    md.append(
+        f"| **Violations** | {len(violations)} | {round(len(violations) / total * 100, 1) if total else 0}% | Immediate redline / strike required |"
+    )
+    md.append(
+        f"| **Needs Review** | {len(needs_review)} | {round(len(needs_review) / total * 100, 1) if total else 0}% | Legal counsel / reviewer sign-off needed |"
+    )
+    md.append(
+        f"| **Compliant** | {len(compliant)} | {round(len(compliant) / total * 100, 1) if total else 0}% | Accepted as drafted |"
+    )
     md.append(f"| **Total Evaluated** | {total} | 100.0% | - |")
     md.append("\n---\n")
 
     # Severity Breakdown
     crit_count = sum(1 for f in violations if f.severity == Severity.CRITICAL or f.severity == "critical")
     high_count = sum(1 for f in violations if f.severity == Severity.HIGH or f.severity == "high")
-    med_count = sum(1 for f in findings if (f.severity == Severity.MEDIUM or f.severity == "medium") and f.verdict != Verdict.COMPLIANT and f.verdict != "compliant")
+    med_count = sum(
+        1
+        for f in findings
+        if (f.severity == Severity.MEDIUM or f.severity == "medium")
+        and f.verdict != Verdict.COMPLIANT
+        and f.verdict != "compliant"
+    )
 
     md.append("### Risk Breakdown\n")
     md.append(f"- **Critical Severity Violations:** {crit_count}")
@@ -68,14 +80,18 @@ def generate_markdown_report(
         md.append("### Violations (Immediate Revision Required)\n")
         for f in violations:
             md.append(f"#### [{f.rule_code}] {f.rule_name}")
-            md.append(f"- **Severity:** `{f.severity.upper() if isinstance(f.severity, str) else f.severity.value.upper()}` | **Confidence:** `{int(f.confidence * 100)}%`")
+            md.append(
+                f"- **Severity:** `{f.severity.upper() if isinstance(f.severity, str) else f.severity.value.upper()}` | **Confidence:** `{int(f.confidence * 100)}%`"
+            )
             md.append(f"- **Reasoning:** {f.reasoning}")
             md.append(f"- **Recommended Action:** {f.recommended_action}")
             if f.evidence and f.evidence.verbatim_quote:
                 verified_str = "Verified in Source" if f.evidence.verified else "UNVERIFIED"
                 md.append("- **Verbatim Quote:**")
-                md.append(f"  > \"{f.evidence.verbatim_quote}\"")
-                md.append(f"  *(Page {f.evidence.page_number}, Chars {f.evidence.char_start}–{f.evidence.char_end} | Evidence Status: {verified_str})*")
+                md.append(f'  > "{f.evidence.verbatim_quote}"')
+                md.append(
+                    f"  *(Page {f.evidence.page_number}, Chars {f.evidence.char_start}–{f.evidence.char_end} | Evidence Status: {verified_str})*"
+                )
             md.append("")
 
     # 2. Needs Review
@@ -83,12 +99,14 @@ def generate_markdown_report(
         md.append("### Needs Human Review (Verification Required)\n")
         for f in needs_review:
             md.append(f"#### [{f.rule_code}] {f.rule_name}")
-            md.append(f"- **Severity:** `{f.severity.upper() if isinstance(f.severity, str) else f.severity.value.upper()}` | **Confidence:** `{int(f.confidence * 100)}%`")
+            md.append(
+                f"- **Severity:** `{f.severity.upper() if isinstance(f.severity, str) else f.severity.value.upper()}` | **Confidence:** `{int(f.confidence * 100)}%`"
+            )
             md.append(f"- **Reasoning:** {f.reasoning}")
             md.append(f"- **Recommended Action:** {f.recommended_action}")
             if f.evidence and f.evidence.verbatim_quote:
                 md.append("- **Candidate Quote:**")
-                md.append(f"  > \"{f.evidence.verbatim_quote}\"")
+                md.append(f'  > "{f.evidence.verbatim_quote}"')
                 md.append(f"  *(Page {f.evidence.page_number}, Chars {f.evidence.char_start}–{f.evidence.char_end})*")
             if f.searches_run:
                 md.append(f"- **Absence Verification Searches:** `{', '.join(f.searches_run[:3])}`")
@@ -100,7 +118,7 @@ def generate_markdown_report(
         for f in compliant:
             md.append(f"- **[{f.rule_code}] {f.rule_name}**: {f.reasoning}")
             if f.evidence and f.evidence.verbatim_quote:
-                md.append(f"  - *Quote (p. {f.evidence.page_number}):* \"{f.evidence.verbatim_quote[:120]}...\"")
+                md.append(f'  - *Quote (p. {f.evidence.page_number}):* "{f.evidence.verbatim_quote[:120]}..."')
         md.append("")
 
     # Audit Trail & Disclaimer
@@ -109,7 +127,9 @@ def generate_markdown_report(
     md.append("- **Verification Gate:** Deterministic String Span Matching (Exact & Normalized)")
     md.append(f"- **Model / Engine:** {findings[0].model_used if findings else 'Rules Engine v1.0'}")
     md.append("- **Document ID:** `" + doc.id + "`")
-    md.append("\n> **Legal Disclaimer:** This report is an automated compliance evaluation and issue organization aid intended for trained reviewers and legal counsel. It does not constitute legal advice or create an attorney-client relationship.")
+    md.append(
+        "\n> **Legal Disclaimer:** This report is an automated compliance evaluation and issue organization aid intended for trained reviewers and legal counsel. It does not constitute legal advice or create an attorney-client relationship."
+    )
 
     return "\n".join(md)
 
@@ -118,7 +138,7 @@ def generate_pdf_report(
     doc: ParsedDocument,
     findings: list[Finding],
     ruleset_name: str = "Commercial NDA Standard Policy",
-    ruleset_version: str = "1.0.0"
+    ruleset_version: str = "1.0.0",
 ) -> bytes:
     """Generates a publication-quality PDF audit report using PyMuPDF."""
     pdf = pymupdf.open()
@@ -205,10 +225,12 @@ def generate_pdf_report(
         detail_lines.append(f"Reason: {f.reasoning}")
         detail_lines.append(f"Action: {f.recommended_action}")
         if f.evidence and f.evidence.verbatim_quote:
-            detail_lines.append(f"Quote (p.{f.evidence.page_number}): \"{f.evidence.verbatim_quote[:140]}...\"")
+            detail_lines.append(f'Quote (p.{f.evidence.page_number}): "{f.evidence.verbatim_quote[:140]}..."')
 
         text_block = "\n".join(detail_lines)
-        page.insert_textbox(pymupdf.Rect(50, y + 22, 545, y + 78), text_block, fontsize=7.5, fontname="helv", color=(0.2, 0.2, 0.2))
+        page.insert_textbox(
+            pymupdf.Rect(50, y + 22, 545, y + 78), text_block, fontsize=7.5, fontname="helv", color=(0.2, 0.2, 0.2)
+        )
 
         y += 88
 
@@ -227,7 +249,9 @@ def generate_pdf_report(
             page = pdf.new_page(width=595, height=842)
             y = 40.0
         bullet = f"[PASS] {c.rule_code}: {c.rule_name} - {c.reasoning}"
-        page.insert_textbox(pymupdf.Rect(45, y, 555, y + 18), bullet, fontsize=7.5, fontname="helv", color=(0.3, 0.3, 0.3))
+        page.insert_textbox(
+            pymupdf.Rect(45, y, 555, y + 18), bullet, fontsize=7.5, fontname="helv", color=(0.3, 0.3, 0.3)
+        )
         y += 16
 
     # Footer Disclaimer

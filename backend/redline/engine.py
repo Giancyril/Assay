@@ -1,12 +1,12 @@
 import difflib
 import re
-from typing import List, Optional
+
 from backend.agent.findings import Finding
+from backend.redline.models import DiffOp, DiffToken, RedlineDiff
 from backend.rules.models import ComplianceRule, Verdict
-from backend.redline.models import RedlineDiff, DiffToken, DiffOp
 
 
-def compute_word_diff(original: str, remediated: str) -> tuple[List[DiffToken], str, str]:
+def compute_word_diff(original: str, remediated: str) -> tuple[list[DiffToken], str, str]:
     """
     Computes fine-grained word-level diff tokens, inline markup ([-old-]{+new+}),
     and a unified diff string between original and remediated clause text.
@@ -16,8 +16,8 @@ def compute_word_diff(original: str, remediated: str) -> tuple[List[DiffToken], 
     rem_words = re.findall(r"\S+|\s+", remediated)
 
     matcher = difflib.SequenceMatcher(None, orig_words, rem_words)
-    tokens: List[DiffToken] = []
-    inline_parts: List[str] = []
+    tokens: list[DiffToken] = []
+    inline_parts: list[str] = []
 
     for tag, i1, i2, j1, j2 in matcher.get_opcodes():
         if tag == "equal":
@@ -47,7 +47,7 @@ def compute_word_diff(original: str, remediated: str) -> tuple[List[DiffToken], 
             remediated.splitlines(keepends=True),
             fromfile="original_clause",
             tofile="remediated_clause",
-            lineterm=""
+            lineterm="",
         )
     )
 
@@ -62,10 +62,7 @@ class RedlineEngine:
     """
 
     @staticmethod
-    def generate_remediation_clause(
-        finding: Finding,
-        rule: Optional[ComplianceRule] = None
-    ) -> tuple[str, str]:
+    def generate_remediation_clause(finding: Finding, rule: ComplianceRule | None = None) -> tuple[str, str]:
         """
         Returns (remediated_clause_text, legal_rationale) tailored to the specific rule violation.
         """
@@ -79,20 +76,22 @@ class RedlineEngine:
                     r"\b(in perpetuity|indefinite(ly)?|survive forever|without limitation in time)\b",
                     "for a period of three (3) years from the Effective Date of this Agreement",
                     quote,
-                    flags=re.IGNORECASE
+                    flags=re.IGNORECASE,
                 )
             elif quote:
                 remediated = f"{quote.rstrip('.')} (provided that in no event shall confidentiality obligations exceed three (3) years from the date of disclosure)."
             else:
                 remediated = "The confidentiality obligations set forth herein shall survive termination of this Agreement and continue for a period of three (3) years from the Effective Date."
-            
+
             rationale = "Replaced indefinite/perpetual term with standard 3-year commercial cap complying with NDA-02 policy limit."
             return remediated, rationale
 
         # NDA-05: Non-Solicitation Encroachment (Strict Prohibition)
         if code == "NDA-05":
             remediated = "[Intentionally Deleted - Non-solicitation restrictions are omitted in accordance with preliminary NDA policy]."
-            rationale = "Non-solicitation restrictions must be struck entirely from preliminary confidentiality agreements."
+            rationale = (
+                "Non-solicitation restrictions must be struck entirely from preliminary confidentiality agreements."
+            )
             return remediated, rationale
 
         # NDA-04: Approved Governing Law & Forum
@@ -102,7 +101,7 @@ class RedlineEngine:
                     r"\b(laws of the [A-Za-z\s]+|laws of [A-Za-z\s]+)\b",
                     "laws of the State of Delaware",
                     quote,
-                    flags=re.IGNORECASE
+                    flags=re.IGNORECASE,
                 )
             else:
                 remediated = "This Agreement shall be governed by, and construed in accordance with, the laws of the State of Delaware, without giving effect to conflicts of law principles."
@@ -112,7 +111,10 @@ class RedlineEngine:
         # NDA-03: Return or Destruction of Materials
         if code == "NDA-03":
             if quote:
-                remediated = quote.rstrip(".") + "; provided that Recipient may retain archival copies of Confidential Information solely for routine IT backup and regulatory compliance purposes."
+                remediated = (
+                    quote.rstrip(".")
+                    + "; provided that Recipient may retain archival copies of Confidential Information solely for routine IT backup and regulatory compliance purposes."
+                )
             else:
                 remediated = "Upon written request, Recipient shall promptly return or certify destruction of all Confidential Information, provided that automated archival IT backups may be retained subject to continued confidentiality."
             rationale = "Added mandatory archival IT backup retention carve-out complying with NDA-03."
@@ -138,16 +140,16 @@ class RedlineEngine:
 
         return remediated, rationale
 
-    def generate_redline_for_finding(
-        self,
-        finding: Finding,
-        rule: Optional[ComplianceRule] = None
-    ) -> RedlineDiff:
+    def generate_redline_for_finding(self, finding: Finding, rule: ComplianceRule | None = None) -> RedlineDiff:
         """
         Creates a structured RedlineDiff with word-level tokens, unified diff,
         and inline markup for an individual finding.
         """
-        original = (finding.evidence.verbatim_quote if finding.evidence and finding.evidence.verbatim_quote else finding.reasoning)
+        original = (
+            finding.evidence.verbatim_quote
+            if finding.evidence and finding.evidence.verbatim_quote
+            else finding.reasoning
+        )
         remediated, rationale = self.generate_remediation_clause(finding, rule)
 
         tokens, inline_markup, unified = compute_word_diff(original, remediated)
@@ -164,19 +166,15 @@ class RedlineEngine:
             legal_rationale=rationale,
             page_number=finding.evidence.page_number if finding.evidence else None,
             char_start=finding.evidence.char_start if finding.evidence else None,
-            char_end=finding.evidence.char_end if finding.evidence else None
+            char_end=finding.evidence.char_end if finding.evidence else None,
         )
 
-    def generate_all_redlines(
-        self,
-        findings: List[Finding]
-    ) -> List[RedlineDiff]:
+    def generate_all_redlines(self, findings: list[Finding]) -> list[RedlineDiff]:
         """
         Generates redline diffs for all findings requiring revision (violations and needs_review).
         """
         actionable = [
-            f for f in findings 
-            if f.verdict in (Verdict.VIOLATION, Verdict.NEEDS_REVIEW, "violation", "needs_review")
+            f for f in findings if f.verdict in (Verdict.VIOLATION, Verdict.NEEDS_REVIEW, "violation", "needs_review")
         ]
         return [self.generate_redline_for_finding(f) for f in actionable]
 

@@ -5,6 +5,7 @@ Provides the DocumentHighlightMap that the frontend PDF viewer uses to overlay
 colored annotation markers, render finding callouts, and enable one-click
 jump-to-source navigation for each compliance finding.
 """
+
 from fastapi import APIRouter, HTTPException, Query, status
 
 from backend.agent.findings import findings_repository
@@ -17,7 +18,9 @@ router = APIRouter(prefix="/api/highlight", tags=["Visual Highlighting"])
 @router.get("/{doc_id}", response_model=DocumentHighlightMap)
 async def get_document_highlight_map(
     doc_id: str,
-    verdict_filter: list[str] | None = Query(default=None, description="Filter by verdict: violation, needs_review, compliant, not_applicable"),
+    verdict_filter: list[str] | None = Query(
+        default=None, description="Filter by verdict: violation, needs_review, compliant, not_applicable"
+    ),
 ):
     """
     Returns a complete highlight map for a document.
@@ -30,7 +33,7 @@ async def get_document_highlight_map(
     if not findings:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
-            detail=f"No findings for document '{doc_id}'. Run a compliance check first."
+            detail=f"No findings for document '{doc_id}'. Run a compliance check first.",
         )
 
     # Apply optional verdict filter
@@ -51,13 +54,10 @@ async def get_highlights_for_page(doc_id: str, page_number: int):
     if not findings:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
-            detail=f"No findings for document '{doc_id}'. Run a compliance check first."
+            detail=f"No findings for document '{doc_id}'. Run a compliance check first.",
         )
 
-    page_findings = [
-        f for f in findings
-        if f.evidence and f.evidence.page_number == page_number
-    ]
+    page_findings = [f for f in findings if f.evidence and f.evidence.page_number == page_number]
 
     highlight_map = build_highlight_map(doc_id, page_findings)
     return highlight_map.annotations

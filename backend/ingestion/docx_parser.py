@@ -12,12 +12,7 @@ from backend.ingestion.models import (
 )
 
 
-def parse_docx(
-    file_bytes: bytes,
-    filename: str,
-    doc_id: str | None = None,
-    storage_path: str = ""
-) -> ParsedDocument:
+def parse_docx(file_bytes: bytes, filename: str, doc_id: str | None = None, storage_path: str = "") -> ParsedDocument:
     """
     Parses a DOCX document, extracting headings, paragraphs, and tables,
     mapping text to synthetic pages and calculating character offsets.
@@ -33,12 +28,12 @@ def parse_docx(
         if not text:
             continue
         style_name = p.style.name if p.style else "Normal"
-        block_type = "heading" if "Heading" in style_name or re.match(r"^(SECTION|ARTICLE|\d+(\.\d+)*)\b", text, re.IGNORECASE) else "paragraph"
-        extracted_elements.append({
-            "text": text,
-            "block_type": block_type,
-            "style": style_name
-        })
+        block_type = (
+            "heading"
+            if "Heading" in style_name or re.match(r"^(SECTION|ARTICLE|\d+(\.\d+)*)\b", text, re.IGNORECASE)
+            else "paragraph"
+        )
+        extracted_elements.append({"text": text, "block_type": block_type, "style": style_name})
 
     # 2. Extract tables
     for table_idx, table in enumerate(doc.tables):
@@ -46,11 +41,9 @@ def parse_docx(
             cell_texts = [cell.text.strip() for cell in row.cells if cell.text.strip()]
             if cell_texts:
                 combined_row = " | ".join(cell_texts)
-                extracted_elements.append({
-                    "text": combined_row,
-                    "block_type": "table_cell",
-                    "style": f"Table-{table_idx}-Row-{row_idx}"
-                })
+                extracted_elements.append(
+                    {"text": combined_row, "block_type": "table_cell", "style": f"Table-{table_idx}-Row-{row_idx}"}
+                )
 
     # Divide into synthetic pages (approx 2,500 characters per page or explicit page boundaries)
     PAGE_CHAR_BUDGET = 2500
@@ -78,7 +71,7 @@ def parse_docx(
                     char_end_doc=page_end,
                     is_ocr=False,
                     spans=current_page_spans,
-                    metadata={"synthetic_page": True}
+                    metadata={"synthetic_page": True},
                 )
             )
             full_text_parts.append(page_text)
@@ -101,7 +94,7 @@ def parse_docx(
                 char_start_doc=span_start_doc,
                 char_end_doc=span_end_doc,
                 text=text,
-                block_type=elem["block_type"]
+                block_type=elem["block_type"],
             )
         )
         current_page_pieces.append(text)
@@ -120,7 +113,7 @@ def parse_docx(
                 char_end_doc=page_end,
                 is_ocr=False,
                 spans=current_page_spans,
-                metadata={"synthetic_page": True}
+                metadata={"synthetic_page": True},
             )
         )
         full_text_parts.append(page_text)
@@ -137,9 +130,5 @@ def parse_docx(
         page_count=len(pages),
         is_ocr=False,
         pages=pages,
-        metadata={
-            "paragraph_count": len(doc.paragraphs),
-            "table_count": len(doc.tables),
-            "format": "DOCX"
-        }
+        metadata={"paragraph_count": len(doc.paragraphs), "table_count": len(doc.tables), "format": "DOCX"},
     )

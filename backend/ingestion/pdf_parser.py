@@ -11,12 +11,7 @@ from backend.ingestion.models import (
 )
 
 
-def parse_pdf(
-    file_bytes: bytes,
-    filename: str,
-    doc_id: str | None = None,
-    storage_path: str = ""
-) -> ParsedDocument:
+def parse_pdf(file_bytes: bytes, filename: str, doc_id: str | None = None, storage_path: str = "") -> ParsedDocument:
     """
     Parses a PDF document, preserving exact page numbers, character offsets,
     and identifying scanned pages requiring OCR fallback.
@@ -56,7 +51,9 @@ def parse_pdf(
 
             # Determine block type (heading vs paragraph)
             block_type = "paragraph"
-            if len(block_text) < 100 and (re.match(r"^(SECTION|ARTICLE|\d+(\.\d+)*)\b", block_text, re.IGNORECASE) or block_text.isupper()):
+            if len(block_text) < 100 and (
+                re.match(r"^(SECTION|ARTICLE|\d+(\.\d+)*)\b", block_text, re.IGNORECASE) or block_text.isupper()
+            ):
                 block_type = "heading"
 
             # Calculate offsets
@@ -73,7 +70,7 @@ def parse_pdf(
                     char_start_doc=span_start_doc,
                     char_end_doc=span_end_doc,
                     text=block_text,
-                    block_type=block_type
+                    block_type=block_type,
                 )
             )
 
@@ -92,10 +89,7 @@ def parse_pdf(
                 char_end_doc=page_char_end,
                 is_ocr=page_is_ocr,
                 spans=page_spans,
-                metadata={
-                    "image_count": len(images),
-                    "block_count": len(raw_blocks)
-                }
+                metadata={"image_count": len(images), "block_count": len(raw_blocks)},
             )
         )
 
@@ -114,8 +108,5 @@ def parse_pdf(
         page_count=len(pages),
         is_ocr=document_is_ocr,
         pages=pages,
-        metadata={
-            "pdf_producer": pdf_doc.metadata.get("producer", ""),
-            "format": "PDF"
-        }
+        metadata={"pdf_producer": pdf_doc.metadata.get("producer", ""), "format": "PDF"},
     )

@@ -1,4 +1,3 @@
-
 from fastapi import APIRouter, HTTPException, status
 from pydantic import BaseModel
 
@@ -37,7 +36,7 @@ async def run_compliance_check(body: RunCheckRequest):
         document_id=body.document_id,
         ruleset_id=body.ruleset_id or "ruleset-nda-commercial",
         ruleset_version=body.ruleset_version,
-        max_concurrency=body.max_concurrency or 4
+        max_concurrency=body.max_concurrency or 4,
     )
 
     counts = {
@@ -53,7 +52,7 @@ async def run_compliance_check(body: RunCheckRequest):
         ruleset_version=body.ruleset_version or "1.0.0",
         total_findings=len(findings),
         counts=counts,
-        findings=findings
+        findings=findings,
     )
 
 
@@ -64,7 +63,7 @@ async def get_document_findings(doc_id: str):
     if not findings:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
-            detail=f"No findings found for document '{doc_id}'. Run a compliance check first."
+            detail=f"No findings found for document '{doc_id}'. Run a compliance check first.",
         )
     return findings
 
@@ -74,10 +73,7 @@ async def get_single_finding(finding_id: str):
     """Retrieve an individual finding by ID."""
     finding = findings_repository.get_finding_by_id(finding_id)
     if not finding:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail=f"Finding '{finding_id}' not found."
-        )
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Finding '{finding_id}' not found.")
     return finding
 
 
@@ -88,26 +84,22 @@ async def review_finding(finding_id: str, body: ReviewFindingRequest):
     if body.reviewer_status not in valid_statuses:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail=f"Invalid reviewer status '{body.reviewer_status}'. Must be one of: {', '.join(valid_statuses)}"
+            detail=f"Invalid reviewer status '{body.reviewer_status}'. Must be one of: {', '.join(valid_statuses)}",
         )
 
     if body.reviewer_status == "overridden" and not body.reviewer_override_reason:
         raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="An override reason is required when overriding a finding."
+            status_code=status.HTTP_400_BAD_REQUEST, detail="An override reason is required when overriding a finding."
         )
 
     updated = findings_repository.update_finding(
         finding_id=finding_id,
         reviewer_status=body.reviewer_status,
         override_reason=body.reviewer_override_reason,
-        reviewed_by=body.reviewed_by
+        reviewed_by=body.reviewed_by,
     )
 
     if not updated:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail=f"Finding '{finding_id}' not found."
-        )
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Finding '{finding_id}' not found.")
 
     return updated

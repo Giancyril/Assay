@@ -18,11 +18,15 @@ def create_sample_pdf_bytes() -> bytes:
 
     # Page 1
     p1 = doc.new_page()
-    p1.insert_text((50, 72), "CONFIDENTIALITY AGREEMENT\n\n1. DEFINITIONS.\nProprietary information is protected.", fontsize=11)
+    p1.insert_text(
+        (50, 72), "CONFIDENTIALITY AGREEMENT\n\n1. DEFINITIONS.\nProprietary information is protected.", fontsize=11
+    )
 
     # Page 2
     p2 = doc.new_page()
-    p2.insert_text((50, 72), "2. TERM AND TERMINATION.\nThis agreement shall remain in effect for 3 years.", fontsize=11)
+    p2.insert_text(
+        (50, 72), "2. TERM AND TERMINATION.\nThis agreement shall remain in effect for 3 years.", fontsize=11
+    )
 
     pdf_bytes = doc.tobytes()
     doc.close()
@@ -59,7 +63,7 @@ def test_pdf_parsing_and_offset_continuity():
     # Invariant: Each span char_start_doc to char_end_doc must match span text
     for page in parsed.pages:
         for span in page.spans:
-            extracted_from_doc = parsed.full_text[span.char_start_doc:span.char_end_doc]
+            extracted_from_doc = parsed.full_text[span.char_start_doc : span.char_end_doc]
             assert extracted_from_doc == span.text, f"Offset mismatch: '{extracted_from_doc}' != '{span.text}'"
 
 

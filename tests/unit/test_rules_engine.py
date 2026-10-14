@@ -33,7 +33,7 @@ def test_rule_set_versioning_immutability():
         version="1.1.0",
         description="Custom rule in v1.1.0",
         rule_type=RuleType.REQUIRED_CLAUSE,
-        severity=Severity.LOW
+        severity=Severity.LOW,
     )
     updated_rules = list(nda_v1.rules) + [new_rule]
 
@@ -41,7 +41,7 @@ def test_rule_set_versioning_immutability():
         ruleset_id="ruleset-nda-commercial",
         new_version="1.1.0",
         updated_rules=updated_rules,
-        description="Minor update adding NDA-11"
+        description="Minor update adding NDA-11",
     )
 
     assert nda_v2.version == "1.1.0"
@@ -61,7 +61,9 @@ def test_deterministic_prohibited_terms_precheck():
     rule_nda_05 = rule_engine.get_rule_set("ruleset-nda-commercial", "1.0.0").rules[4]
     assert rule_nda_05.code == "NDA-05"
 
-    text = "Section 8. Recipient shall not directly or indirectly solicit or hire any employee of Discloser for two years."
+    text = (
+        "Section 8. Recipient shall not directly or indirectly solicit or hire any employee of Discloser for two years."
+    )
     result = run_deterministic_precheck(text, rule_nda_05)
 
     assert result.has_deterministic_verdict is True
@@ -87,7 +89,9 @@ def test_deterministic_numeric_duration_precheck():
     rule_nda_02 = rule_engine.get_rule_set("ruleset-nda-commercial", "1.0.0").rules[1]
 
     # Test 5 years (60 months) > 36 months cap -> VIOLATION
-    violation_text = "The obligations of confidentiality shall remain in effect for a period of five (5) years from disclosure."
+    violation_text = (
+        "The obligations of confidentiality shall remain in effect for a period of five (5) years from disclosure."
+    )
     v_res = run_deterministic_precheck(violation_text, rule_nda_02)
     assert v_res.has_deterministic_verdict is True
     assert v_res.verdict == Verdict.VIOLATION
@@ -136,8 +140,8 @@ def test_rules_api_endpoints():
         json={
             "candidate_text": "Recipient shall not solicit any employee.",
             "rule_id": "NDA-05",
-            "ruleset_id": "ruleset-nda-commercial"
-        }
+            "ruleset_id": "ruleset-nda-commercial",
+        },
     )
     assert precheck_res.status_code == 200
     data = precheck_res.json()

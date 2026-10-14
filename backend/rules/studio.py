@@ -6,6 +6,7 @@ rulesets. Users can define domain-specific rules (e.g., SOC-2, HIPAA, custom
 NDA clauses) without modifying code. Rules are persisted to the uploads dir
 as JSON files and hot-loaded into the rule engine registry.
 """
+
 import json
 import logging
 import os
@@ -14,6 +15,7 @@ from datetime import UTC, datetime
 
 try:
     import yaml
+
     YAML_AVAILABLE = True
 except ImportError:
     YAML_AVAILABLE = False
@@ -62,8 +64,10 @@ _load_all_custom_rulesets()
 
 # -- Public API ----------------------------------------------------------------
 
+
 class CreateRuleRequest(BaseModel):
     """Request body for creating a single custom compliance rule."""
+
     code: str = Field(..., min_length=2, max_length=32, pattern=r"^[A-Z0-9_\-]+$")
     name: str = Field(..., min_length=3, max_length=128)
     description: str
@@ -81,6 +85,7 @@ class CreateRuleRequest(BaseModel):
 
 class CreateRulesetRequest(BaseModel):
     """Request body for creating a full custom ruleset."""
+
     name: str
     version: str = "1.0.0"
     description: str
@@ -161,8 +166,10 @@ def delete_custom_ruleset(ruleset_id: str) -> None:
 
 # -- Helpers -------------------------------------------------------------------
 
+
 def _make_rule(ruleset_id: str, req: CreateRuleRequest) -> ComplianceRule:
     from backend.rules.models import RuleParameters
+
     params = RuleParameters(
         prohibited_terms=req.prohibited_terms,
         required_elements=req.required_elements,

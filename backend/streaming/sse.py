@@ -14,13 +14,14 @@ Event schema (JSON-encoded data fields):
   - message: str
   - timestamp: ISO 8601
 """
+
 import asyncio
 import json
 import logging
 from collections.abc import AsyncGenerator
 from datetime import UTC, datetime
 
-from backend.agent.findings import Finding, findings_repository
+from backend.agent.findings import Finding
 from backend.agent.orchestrator import check_document_against_ruleset
 from backend.rules.engine import rule_engine
 
@@ -58,13 +59,16 @@ async def stream_compliance_check(
         rules = ruleset.rules
         total = len(rules)
 
-        yield _sse_event("start", {
-            "document_id": document_id,
-            "ruleset_id": ruleset_id,
-            "total_rules": total,
-            "message": f"Starting compliance audit — {total} rules to evaluate",
-            "progress": 0.0,
-        })
+        yield _sse_event(
+            "start",
+            {
+                "document_id": document_id,
+                "ruleset_id": ruleset_id,
+                "total_rules": total,
+                "message": f"Starting compliance audit — {total} rules to evaluate",
+                "progress": 0.0,
+            },
+        )
 
         # Stream rules one-by-one to give granular progress updates.
         # We run them with concurrency=1 during streaming to provide ordered events;
@@ -72,14 +76,17 @@ async def stream_compliance_check(
         all_findings: list[Finding] = []
 
         for idx, rule in enumerate(rules):
-            yield _sse_event("rule_start", {
-                "rule_code": rule.code,
-                "rule_name": rule.name,
-                "rule_index": idx + 1,
-                "total_rules": total,
-                "message": f"Evaluating rule {rule.code}: {rule.name}",
-                "progress": round(idx / total, 4),
-            })
+            yield _sse_event(
+                "rule_start",
+                {
+                    "rule_code": rule.code,
+                    "rule_name": rule.name,
+                    "rule_index": idx + 1,
+                    "total_rules": total,
+                    "message": f"Evaluating rule {rule.code}: {rule.name}",
+                    "progress": round(idx / total, 4),
+                },
+            )
 
             # Small yield to allow event loop to flush the SSE buffer
             await asyncio.sleep(0)
@@ -95,27 +102,33 @@ async def stream_compliance_check(
                 )
             except Exception as rule_err:
                 logger.warning("Rule %s evaluation failed: %s", rule.code, rule_err)
-                yield _sse_event("rule_error", {
-                    "rule_code": rule.code,
-                    "message": f"Rule {rule.code} evaluation failed: {rule_err}",
-                    "progress": round((idx + 1) / total, 4),
-                })
+                yield _sse_event(
+                    "rule_error",
+                    {
+                        "rule_code": rule.code,
+                        "message": f"Rule {rule.code} evaluation failed: {rule_err}",
+                        "progress": round((idx + 1) / total, 4),
+                    },
+                )
                 continue
 
             all_findings.extend(rule_findings)
 
             for finding in rule_findings:
-                yield _sse_event("rule_complete", {
-                    "rule_code": rule.code,
-                    "rule_name": rule.name,
-                    "rule_index": idx + 1,
-                    "total_rules": total,
-                    "verdict": str(finding.verdict),
-                    "severity": str(finding.severity),
-                    "finding": finding.model_dump(),
-                    "message": f"Rule {rule.code}: {finding.verdict.upper()}",
-                    "progress": round((idx + 1) / total, 4),
-                })
+                yield _sse_event(
+                    "rule_complete",
+                    {
+                        "rule_code": rule.code,
+                        "rule_name": rule.name,
+                        "rule_index": idx + 1,
+                        "total_rules": total,
+                        "verdict": str(finding.verdict),
+                        "severity": str(finding.severity),
+                        "finding": finding.model_dump(),
+                        "message": f"Rule {rule.code}: {finding.verdict.upper()}",
+                        "progress": round((idx + 1) / total, 4),
+                    },
+                )
 
         # Summarize
         counts = {
@@ -125,19 +138,24 @@ async def stream_compliance_check(
             "not_applicable": sum(1 for f in all_findings if str(f.verdict) == "not_applicable"),
         }
 
-        yield _sse_event("complete", {
-            "document_id": document_id,
-            "total_findings": len(all_findings),
-            "counts": counts,
-            "message": "Compliance audit complete",
-            "progress": 1.0,
-        })
+        yield _sse_event(
+            "complete",
+            {
+                "document_id": document_id,
+                "total_findings": len(all_findings),
+                "counts": counts,
+                "message": "Compliance audit complete",
+                "progress": 1.0,
+            },
+        )
 
     except Exception as exc:
         logger.exception("SSE stream error for document %s: %s", document_id, exc)
-        yield _sse_event("error", {
-            "document_id": document_id,
-            "message": f"Audit stream error: {exc}",
-            "progress": 0.0,
-        })
-
+        yield _sse_event(
+            "error",
+            {
+                "document_id": document_id,
+                "message": f"Audit stream error: {exc}",
+                "progress": 0.0,
+            },
+        )

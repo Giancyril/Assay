@@ -1,4 +1,4 @@
-﻿# Compliance Agent
+# Compliance Agent
 
 A production-grade, AI-augmented autonomous compliance agent that analyzes policies, contracts, and agreements, extracts key clauses, evaluates them against versioned compliance rules, detects violations, and provides deterministic evidence verification for every finding.
 
@@ -136,6 +136,59 @@ pytest tests/ -v
 ```
 
 ---
+
+
+---
+
+## Advanced Enterprise Features (Day 1)
+
+Compliance Agent includes 5 production-grade advanced compliance features:
+
+### 1. Automated Redlining Engine (/api/redline)
+- **Word-Level Token Diffs**: Computes precise diffs between non-compliant clauses and suggested standard remediation language.
+- **Rule-Specific Remediation Templates**: Pre-configured remediation clauses for perpetual obligations, non-solicitation, jurisdiction, and governing law.
+- **Unified Diff & Inline Markup**: Outputs both standard unified diff (--- / +++) and inline markup formats ([-deleted-] and {+inserted+}).
+- **Endpoint**:
+  - GET /api/redline/{doc_id}: Retrieves all generated redlines for non-compliant findings.
+  - GET /api/redline/{doc_id}/{finding_id}: Retrieves the specific redline diff for an individual finding.
+
+### 2. Visual Document Highlighting & Jump-to-Source (/api/highlight)
+- **Semantic Color Mapping**:
+  - VIOLATION: High-visibility Crimson (#DC2626)
+  - NEEDS_REVIEW: Warning Amber (#D97706)
+  - COMPLIANT: Success Emerald (#059669)
+  - NOT_APPLICABLE: Slate Gray (#64748B)
+- **Page-Aware Coordinates & Text Anchoring**: Locates exact character offsets and lines across PDF and DOCX document models.
+- **Endpoint**:
+  - GET /api/highlight/{doc_id}: Retrieves all highlight annotations grouped by document.
+  - GET /api/highlight/{doc_id}/page/{page_number}: Filters highlights for rendering the active page in a PDF viewer.
+
+### 3. Real-Time SSE Audit Streaming (/api/stream)
+- **Server-Sent Events (SSE)**: Streams compliance progress in real-time as each rule is evaluated.
+- **Event Types**:
+  - audit_start: Audit initialization with document metadata and rule count.
+  - `rule_progress`: Dispatched after each rule check completes with current finding and pass/fail verdict.
+  - audit_complete: Emits final compliance score, summary counts, and report ready signal.
+- **Endpoint**:
+  - GET /api/stream/audit/{doc_id}?ruleset_id=ruleset-nda-commercial
+
+### 4. Custom Rule Studio (/api/studio)
+- **Dynamic Ruleset Authoring**: Enables compliance teams to define, modify, and delete custom rulesets without code deployment.
+- **JSON & YAML Importer**: Supports importing enterprise standard policy sheets directly.
+- **Endpoints**:
+  - POST /api/studio/rulesets: Create a new custom ruleset.
+  - GET /api/studio/rulesets: List all rulesets (built-in and custom).
+  - GET /api/studio/rulesets/{id}: Fetch ruleset details.
+  - POST /api/studio/rulesets/{id}/rules: Append a custom rule.
+  - DELETE /api/studio/rulesets/{id}/rules/{rule_id}: Remove a rule.
+  - POST /api/studio/rulesets/import: Import a ruleset from JSON or YAML payload.
+
+### 5. Cryptographic Audit Certificates (/api/certificates)
+- **HMAC-SHA256 Integrity Verification**: Generates a tamper-evident digital certificate signing the document hash, audit findings, and compliance score.
+- **Non-Repudiation**: Enables external legal and audit verification of compliance reports.
+- **Endpoints**:
+  - POST /api/certificates/{doc_id}: Issues and cryptographically signs a compliance certificate.
+  - POST /api/certificates/verify: Validates whether a provided certificate payload has been altered or tampered with.
 
 ## License
 

@@ -6,16 +6,17 @@ Unit tests for Day 1 Advanced Features:
   4. Custom Rule Studio & Ruleset Importer
   5. Cryptographic Audit Certificate & Verification
 """
+
 import json
 
 from fastapi.testclient import TestClient
 
 from backend.app.main import app
-from backend.certificate.generator import AuditCertificate, generate_certificate, verify_certificate
+from backend.certificate.generator import AuditCertificate, verify_certificate
 from backend.highlight.locator import build_highlight_map
 from backend.highlight.models import VERDICT_COLOR_MAP, DocumentHighlightMap
 from backend.redline.engine import RedlineEngine, compute_word_diff
-from backend.redline.models import DiffOp, DiffToken, RedlineDiff
+from backend.redline.models import DiffOp, RedlineDiff
 from backend.rules.models import RuleType, Severity
 from backend.rules.studio import (
     CreateRuleRequest,
@@ -25,7 +26,6 @@ from backend.rules.studio import (
     delete_rule_from_ruleset,
     get_custom_ruleset,
     import_ruleset_from_json,
-    list_custom_rulesets,
 )
 
 client = TestClient(app)
@@ -34,6 +34,7 @@ client = TestClient(app)
 # -------------------------------------------------------------
 # Feature 1: Automated Redlining Engine
 # -------------------------------------------------------------
+
 
 def test_compute_word_diff_equal():
     tokens, markup, unified = compute_word_diff("hello world", "hello world")
@@ -56,6 +57,7 @@ def test_compute_word_diff_insert():
     assert DiffOp.INSERT in ops
     assert "world" in markup
     assert "{+" in markup and "+}" in markup
+
 
 def test_compute_word_diff_unified_diff_format():
     _tokens, _markup, unified = compute_word_diff("original text", "remediated text")
@@ -179,6 +181,7 @@ def test_redline_api_404_no_findings():
 # Feature 2: Visual Document Highlighting
 # -------------------------------------------------------------
 
+
 def test_verdict_color_map_coverage():
     for verdict in ("violation", "needs_review", "compliant", "not_applicable"):
         assert verdict in VERDICT_COLOR_MAP
@@ -238,6 +241,7 @@ def test_highlight_api_404_no_findings():
 # Feature 3: SSE Streaming (router header test)
 # -------------------------------------------------------------
 
+
 def test_stream_audit_content_type():
     """
     Verify the /api/stream/{doc_id}/audit endpoint returns text/event-stream
@@ -253,6 +257,7 @@ def test_stream_audit_content_type():
 # -------------------------------------------------------------
 # Feature 4: Custom Rule Studio
 # -------------------------------------------------------------
+
 
 def test_create_custom_ruleset():
     req = CreateRulesetRequest(
@@ -281,6 +286,7 @@ def test_create_custom_ruleset():
 
 def test_get_custom_ruleset_not_found():
     import pytest
+
     with pytest.raises(KeyError):
         get_custom_ruleset("ruleset-custom-does-not-exist")
 
@@ -392,9 +398,10 @@ def test_studio_api_add_rule():
 # Feature 5: Cryptographic Audit Certificate
 # -------------------------------------------------------------
 
+
 def test_certificate_verify_unmodified():
     """A freshly generated certificate should verify successfully."""
-    from backend.certificate.generator import _sha256, _hmac_sign, _canonical_payload
+    from backend.certificate.generator import _canonical_payload, _hmac_sign, _sha256
 
     # Build a minimal cert dict and sign it
     cert_data = {
@@ -425,7 +432,7 @@ def test_certificate_verify_unmodified():
 
 def test_certificate_verify_tampered():
     """Mutating any field after issuance should invalidate the certificate."""
-    from backend.certificate.generator import _sha256, _hmac_sign, _canonical_payload
+    from backend.certificate.generator import _canonical_payload, _hmac_sign, _sha256
 
     cert_data = {
         "certificate_id": "cert-tampered",
@@ -459,7 +466,7 @@ def test_certificate_verify_tampered():
 
 def test_certificate_api_verify_endpoint():
     """POST /api/certificates/verify should return valid=true for a correct cert."""
-    from backend.certificate.generator import _sha256, _hmac_sign, _canonical_payload
+    from backend.certificate.generator import _canonical_payload, _hmac_sign, _sha256
 
     cert_data = {
         "certificate_id": "cert-api-test",

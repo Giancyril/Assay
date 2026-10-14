@@ -30,9 +30,4 @@ async def search_document_clauses(doc_id: str, body: SearchQueryRequest):
     """Perform hybrid retrieval on document clauses using full-text and vector search."""
     if not body.query or not body.query.strip():
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Query cannot be empty.")
-    return clause_index_service.search_document(
-        doc_id=doc_id,
-        query=body.query,
-        top_k=body.top_k,
-        alpha=body.alpha
-    )
+    return clause_index_service.search_document(doc_id=doc_id, query=body.query, top_k=body.top_k, alpha=body.alpha)

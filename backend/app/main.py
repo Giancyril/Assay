@@ -7,21 +7,18 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from backend.app.config import settings
 from backend.app.database import check_db_health
+from backend.app.routers.certificate import router as certificate_router
 from backend.app.routers.checks import router as checks_router
 from backend.app.routers.documents import router as documents_router
-from backend.app.routers.indexing import router as indexing_router
-from backend.app.routers.certificate import router as certificate_router
 from backend.app.routers.highlight import router as highlight_router
+from backend.app.routers.indexing import router as indexing_router
 from backend.app.routers.redline import router as redline_router
-from backend.app.routers.stream import router as stream_router
-from backend.app.routers.studio import router as studio_router
 from backend.app.routers.reports import router as reports_router
 from backend.app.routers.rules import router as rules_router
+from backend.app.routers.stream import router as stream_router
+from backend.app.routers.studio import router as studio_router
 
-logging.basicConfig(
-    level=settings.LOG_LEVEL,
-    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s"
-)
+logging.basicConfig(level=settings.LOG_LEVEL, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s")
 logger = logging.getLogger("compliance_agent")
 
 
@@ -36,7 +33,7 @@ app = FastAPI(
     title=settings.PROJECT_NAME,
     version=settings.VERSION,
     description="Compliance Agent API: Contract & Policy Clause Verification and Rule Engine",
-    lifespan=lifespan
+    lifespan=lifespan,
 )
 
 # CORS
@@ -71,14 +68,10 @@ async def health_check():
         "version": settings.VERSION,
         "environment": settings.ENVIRONMENT,
         "database_connected": db_connected,
-        "timestamp": datetime.now(UTC).isoformat()
+        "timestamp": datetime.now(UTC).isoformat(),
     }
 
 
 @app.get("/", include_in_schema=False)
 async def root():
-    return {
-        "message": f"Welcome to {settings.PROJECT_NAME} API. Visit /docs for OpenAPI documentation."
-    }
-
-
+    return {"message": f"Welcome to {settings.PROJECT_NAME} API. Visit /docs for OpenAPI documentation."}

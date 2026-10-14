@@ -5,11 +5,12 @@ Maps each compliance finding to HighlightAnnotations with page offsets, semantic
 colors, tooltip summaries, and PDF jump-links that the frontend can consume to
 overlay highlights directly on the rendered document.
 """
+
 from backend.agent.findings import Finding
 from backend.highlight.models import (
+    VERDICT_COLOR_MAP,
     DocumentHighlightMap,
     HighlightAnnotation,
-    VERDICT_COLOR_MAP,
 )
 from backend.ingestion.repository import doc_repository
 
@@ -102,4 +103,4 @@ def build_highlight_map(
         total_annotations=len(annotations),
         annotations=annotations,
         page_index=page_index,
-    )
+    )

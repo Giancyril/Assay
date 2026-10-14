@@ -1,4 +1,3 @@
-
 from fastapi import APIRouter, File, HTTPException, UploadFile, status
 
 from backend.ingestion.models import DocumentPage, ParsedDocument
@@ -41,7 +40,7 @@ async def get_document_page(doc_id: str, page_num: int):
     if page_num < 1 or page_num > len(doc.pages):
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail=f"Invalid page number {page_num}. Document has {len(doc.pages)} pages."
+            detail=f"Invalid page number {page_num}. Document has {len(doc.pages)} pages.",
         )
     return doc.pages[page_num - 1]
 
@@ -57,7 +56,7 @@ async def get_document_full_text(doc_id: str):
         "filename": doc.filename,
         "page_count": doc.page_count,
         "total_characters": len(doc.full_text),
-        "text": doc.full_text
+        "text": doc.full_text,
     }
 
 

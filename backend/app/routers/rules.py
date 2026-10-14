@@ -1,4 +1,3 @@
-
 from fastapi import APIRouter, HTTPException, status
 from pydantic import BaseModel
 
@@ -44,10 +43,7 @@ async def list_rule_set_versions(ruleset_id: str):
 async def publish_rule_set_version(ruleset_id: str, body: CreateVersionRequest):
     """Publish a new immutable version of a rule set without overwriting past versions."""
     return rule_engine.create_new_version(
-        ruleset_id=ruleset_id,
-        new_version=body.version,
-        updated_rules=body.updated_rules,
-        description=body.description
+        ruleset_id=ruleset_id, new_version=body.version, updated_rules=body.updated_rules, description=body.description
     )
 
 
@@ -58,7 +54,6 @@ async def execute_rule_precheck(body: PrecheckRequest):
     target_rule = next((r for r in ruleset.rules if r.id == body.rule_id or r.code == body.rule_id), None)
     if not target_rule:
         raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail=f"Rule '{body.rule_id}' not found in rule set '{ruleset.id}'."
+            status_code=status.HTTP_404_NOT_FOUND, detail=f"Rule '{body.rule_id}' not found in rule set '{ruleset.id}'."
         )
     return run_deterministic_precheck(candidate_text=body.candidate_text, rule=target_rule)

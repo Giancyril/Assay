@@ -1,9 +1,9 @@
-from enum import Enum
-from typing import List, Optional
+from enum import StrEnum
+
 from pydantic import BaseModel, Field
 
 
-class DiffOp(str, Enum):
+class DiffOp(StrEnum):
     EQUAL = "equal"
     DELETE = "delete"
     INSERT = "insert"
@@ -22,8 +22,8 @@ class RedlineDiff(BaseModel):
     remediated_text: str
     inline_markup: str
     unified_diff: str
-    tokens: List[DiffToken] = Field(default_factory=list)
+    tokens: list[DiffToken] = Field(default_factory=list)
     legal_rationale: str
-    page_number: Optional[int] = None
-    char_start: Optional[int] = None
-    char_end: Optional[int] = None
+    page_number: int | None = None
+    char_start: int | None = None
+    char_end: int | None = None

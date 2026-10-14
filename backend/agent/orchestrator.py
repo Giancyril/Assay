@@ -12,18 +12,11 @@ from backend.rules.models import ComplianceRule, Verdict
 
 
 async def execute_single_rule_check(
-    document_id: str,
-    full_text: str,
-    rule: ComplianceRule,
-    rule_set_version: str = "1.0.0"
+    document_id: str, full_text: str, rule: ComplianceRule, rule_set_version: str = "1.0.0"
 ) -> Finding:
     """Executes the LangGraph check graph for one (document, rule) pair."""
     initial_state = ComplianceCheckState(
-        document_id=document_id,
-        rule_id=rule.id,
-        rule=rule,
-        full_document_text=full_text,
-        max_iterations=3
+        document_id=document_id, rule_id=rule.id, rule=rule, full_document_text=full_text, max_iterations=3
     )
 
     # Run graph (CPU-bound / async friendly)
@@ -44,7 +37,7 @@ async def execute_single_rule_check(
             page_number=page_num,
             char_start=c_start or 0,
             char_end=c_end or len(quote),
-            verified=True
+            verified=True,
         )
 
     finding = Finding(
@@ -61,7 +54,7 @@ async def execute_single_rule_check(
         recommended_action=result_dict.get("recommended_action") or "",
         confidence=result_dict.get("confidence", 0.8),
         searches_run=result_dict.get("searches_run", []),
-        rule_set_version=rule_set_version
+        rule_set_version=rule_set_version,
     )
     return finding
 
@@ -79,10 +72,7 @@ async def check_document_against_ruleset(
     """
     doc = doc_repository.get_document(document_id)
     if not doc:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail=f"Document '{document_id}' not found."
-        )
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Document '{document_id}' not found.")
 
     ruleset = rule_engine.get_rule_set(ruleset_id, version=ruleset_version)
     active_rules = ruleset.rules
@@ -97,10 +87,7 @@ async def check_document_against_ruleset(
             while retries >= 0:
                 try:
                     return await execute_single_rule_check(
-                        document_id=doc.id,
-                        full_text=doc.full_text,
-                        rule=rule,
-                        rule_set_version=ruleset.version
+                        document_id=doc.id, full_text=doc.full_text, rule=rule, rule_set_version=ruleset.version
                     )
                 except Exception as e:
                     retries -= 1
@@ -117,7 +104,7 @@ async def check_document_against_ruleset(
                             reasoning=f"Check failed due to internal error: {e!s}",
                             recommended_action="Retry rule check manually.",
                             confidence=0.0,
-                            rule_set_version=ruleset.version
+                            rule_set_version=ruleset.version,
                         )
                     await asyncio.sleep(0.5)
 
@@ -127,4 +114,3 @@ async def check_document_against_ruleset(
     # Save findings
     findings_repository.save_findings(document_id, list(findings))
     return list(findings)
-

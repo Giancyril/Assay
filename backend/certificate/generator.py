@@ -16,6 +16,7 @@ signature and confirm the certificate has not been altered after issuance.
 In production this secret should be an asymmetric signing key (RSA/ECDSA);
 HMAC is used here as a zero-dependency approach that works without a PKI.
 """
+
 import hashlib
 import hmac
 import json
@@ -25,10 +26,9 @@ from typing import Any
 
 from pydantic import BaseModel, Field
 
-from backend.agent.findings import Finding, findings_repository
+from backend.agent.findings import findings_repository
 from backend.app.config import settings
 from backend.ingestion.repository import doc_repository
-from backend.rules.models import Verdict
 
 # HMAC key — in production, inject via environment variable; fall back to project secret.
 _HMAC_KEY: bytes = (getattr(settings, "AUDIT_HMAC_SECRET", None) or settings.SECRET_KEY).encode("utf-8")
@@ -47,6 +47,7 @@ class AuditCertificate(BaseModel):
     """
     Tamper-evident audit certificate for a compliance check session.
     """
+
     certificate_id: str = Field(default_factory=lambda: f"cert-{uuid.uuid4().hex}")
     issued_at: str = Field(default_factory=lambda: datetime.now(UTC).isoformat())
     issuer: str = "Compliance Agent Automated Audit System v1"
@@ -70,8 +71,8 @@ class AuditCertificate(BaseModel):
     findings: list[FindingCertRecord]
 
     # Integrity
-    payload_sha256: str   # SHA-256 of canonical JSON payload (excluding this field)
-    hmac_signature: str   # HMAC-SHA256(payload_sha256, _HMAC_KEY) as hex digest
+    payload_sha256: str  # SHA-256 of canonical JSON payload (excluding this field)
+    hmac_signature: str  # HMAC-SHA256(payload_sha256, _HMAC_KEY) as hex digest
     verified: bool = False  # Set to True after caller verifies
 
 
@@ -185,4 +186,4 @@ def verify_certificate(cert: AuditCertificate) -> bool:
 
     hash_match = hmac.compare_digest(expected_hash, cert.payload_sha256)
     sig_match = hmac.compare_digest(expected_sig, cert.hmac_signature)
-    return hash_match and sig_match
+    return hash_match and sig_match

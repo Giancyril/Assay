@@ -19,7 +19,7 @@ async def get_redlines_for_document(doc_id: str):
     if not findings:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
-            detail=f"No findings for document '{doc_id}'. Run a compliance check first."
+            detail=f"No findings for document '{doc_id}'. Run a compliance check first.",
         )
 
     redlines = redline_engine.generate_all_redlines(findings)
@@ -33,9 +33,6 @@ async def get_redline_for_finding(finding_id: str):
     """
     finding = findings_repository.get_finding_by_id(finding_id)
     if not finding:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail=f"Finding '{finding_id}' not found."
-        )
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Finding '{finding_id}' not found.")
 
     return redline_engine.generate_redline_for_finding(finding)

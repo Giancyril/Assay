@@ -8,7 +8,10 @@ HEADING_PATTERNS = [
     # "1. DEFINITIONS", "1.1 Confidential Information", "12.3 Limitation of Liability"
     re.compile(r"^(\d+(\.\d+)*)\.?\s+([A-Za-z0-9\s\-_,;:()/'\"]{3,50})", re.MULTILINE),
     # "SECTION 1 - GOVERNING LAW", "ARTICLE IV: CONFIDENTIALITY", "CLAUSE 3.2"
-    re.compile(r"^(SECTION|ARTICLE|CLAUSE)\s+([IVXLCDM\d]+(\.\d+)*)[:.\-\s]+([A-Za-z0-9\s\-_,;:()/'\"]{3,50})", re.IGNORECASE | re.MULTILINE),
+    re.compile(
+        r"^(SECTION|ARTICLE|CLAUSE)\s+([IVXLCDM\d]+(\.\d+)*)[:.\-\s]+([A-Za-z0-9\s\-_,;:()/'\"]{3,50})",
+        re.IGNORECASE | re.MULTILINE,
+    ),
     # Standalone UPPERCASE heading line, e.g. "MUTUAL NON-DISCLOSURE AGREEMENT"
     re.compile(r"^([A-Z0-9\s\-_,;:()/'\"]{5,60})$", re.MULTILINE),
 ]
@@ -38,7 +41,9 @@ def extract_section_headers(text: str) -> list[tuple[int, int, str | None, str]]
 
             # Check pattern 2: "SECTION 1: TERM"
             if not matched:
-                m2 = re.match(r"^(SECTION|ARTICLE|CLAUSE)\s+([IVXLCDM\d]+(\.\d+)*)[:.\-\s]+(.+)$", line_stripped, re.IGNORECASE)
+                m2 = re.match(
+                    r"^(SECTION|ARTICLE|CLAUSE)\s+([IVXLCDM\d]+(\.\d+)*)[:.\-\s]+(.+)$", line_stripped, re.IGNORECASE
+                )
                 if m2:
                     sec_num = f"{m2.group(1).upper()} {m2.group(2)}"
                     sec_title = m2.group(4).strip()
@@ -90,15 +95,15 @@ def chunk_document_by_structure(parsed_doc: ParsedDocument) -> list[ClauseChunk]
             page_num = find_page_for_offset(parsed_doc, p_start)
             chunks.append(
                 ClauseChunk(
-                    id=f"{parsed_doc.id}-chunk-{i+1}",
+                    id=f"{parsed_doc.id}-chunk-{i + 1}",
                     document_id=parsed_doc.id,
                     section_number=None,
-                    section_title=f"Paragraph {i+1}",
+                    section_title=f"Paragraph {i + 1}",
                     content=para_clean,
                     page_start=page_num,
                     page_end=find_page_for_offset(parsed_doc, p_end),
                     char_start_doc=p_start,
-                    char_end_doc=p_end
+                    char_end_doc=p_end,
                 )
             )
             offset += len(para) + 2
@@ -119,7 +124,7 @@ def chunk_document_by_structure(parsed_doc: ParsedDocument) -> list[ClauseChunk]
                     page_start=1,
                     page_end=find_page_for_offset(parsed_doc, len(preamble_text)),
                     char_start_doc=0,
-                    char_end_doc=len(preamble_text)
+                    char_end_doc=len(preamble_text),
                 )
             )
 
@@ -151,22 +156,22 @@ def chunk_document_by_structure(parsed_doc: ParsedDocument) -> list[ClauseChunk]
                 p_end = p_start + len(sub_clean)
                 chunks.append(
                     ClauseChunk(
-                        id=f"{parsed_doc.id}-clause-{i+1}-{sub_idx+1}",
+                        id=f"{parsed_doc.id}-clause-{i + 1}-{sub_idx + 1}",
                         document_id=parsed_doc.id,
                         section_number=sec_num,
-                        section_title=f"{sec_title} (Part {sub_idx+1})",
+                        section_title=f"{sec_title} (Part {sub_idx + 1})",
                         content=sub_clean,
                         page_start=find_page_for_offset(parsed_doc, p_start),
                         page_end=find_page_for_offset(parsed_doc, p_end),
                         char_start_doc=p_start,
-                        char_end_doc=p_end
+                        char_end_doc=p_end,
                     )
                 )
                 sub_offset = p_end
         else:
             chunks.append(
                 ClauseChunk(
-                    id=f"{parsed_doc.id}-clause-{i+1}",
+                    id=f"{parsed_doc.id}-clause-{i + 1}",
                     document_id=parsed_doc.id,
                     section_number=sec_num,
                     section_title=sec_title,
@@ -174,7 +179,7 @@ def chunk_document_by_structure(parsed_doc: ParsedDocument) -> list[ClauseChunk]
                     page_start=find_page_for_offset(parsed_doc, actual_start),
                     page_end=find_page_for_offset(parsed_doc, actual_end),
                     char_start_doc=actual_start,
-                    char_end_doc=actual_end
+                    char_end_doc=actual_end,
                 )
             )
 

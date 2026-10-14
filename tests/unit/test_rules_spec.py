@@ -18,6 +18,7 @@ def test_starter_nda_rules_types():
 
 def test_deterministic_regex_on_prohibited_terms():
     import re
+
     rule_nda_05 = next(r for r in STARTER_NDA_RULES if r.code == "NDA-05")
     assert rule_nda_05.deterministic_regex is not None
 

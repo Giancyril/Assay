@@ -37,8 +37,10 @@ Breach of this Agreement may cause irreparable harm for which damages are inadeq
 Recipient agrees that during the term and for eighteen (18) months thereafter, Recipient shall not directly or indirectly solicit, recruit, or hire any officer or employee of Discloser.
 """
 
+
 def create_ingested_test_doc():
     import pymupdf
+
     doc = pymupdf.open()
     page = doc.new_page()
     page.insert_text((50, 72), SAMPLE_CONTRACT_TEXT, fontsize=10)
@@ -62,7 +64,7 @@ def test_structure_aware_chunking():
 
     # Check offset accuracy: full_text slice must match chunk content
     for c in chunks:
-        sliced = doc.full_text[c.char_start_doc:c.char_end_doc]
+        sliced = doc.full_text[c.char_start_doc : c.char_end_doc]
         assert sliced == c.content, "Chunk offset slice does not match content"
 
 
@@ -79,28 +81,28 @@ def test_retrieval_accuracy_evaluation_before_llm():
         {
             "query": "governing law State of Delaware and jurisdiction",
             "expected_section": "6",
-            "description": "Governing Law clause"
+            "description": "Governing Law clause",
         },
         {
             "query": "solicit, recruit, or hire any officer or employee non-solicitation",
             "expected_section": "8",
-            "description": "Non-solicitation clause"
+            "description": "Non-solicitation clause",
         },
         {
             "query": "confidentiality obligations survive expire three (3) years duration",
             "expected_section": "3",
-            "description": "Term / Duration clause"
+            "description": "Term / Duration clause",
         },
         {
             "query": "return or certify destruction of all Confidential Information",
             "expected_section": "4",
-            "description": "Return of Materials clause"
+            "description": "Return of Materials clause",
         },
         {
             "query": "carve-outs publicly known prior possession independently developed",
             "expected_section": "1",
-            "description": "Exceptions / Definitions clause"
-        }
+            "description": "Exceptions / Definitions clause",
+        },
     ]
 
     rank_1_hits = 0
@@ -117,7 +119,9 @@ def test_retrieval_accuracy_evaluation_before_llm():
                 found_rank = rank
                 break
 
-        assert found_rank is not None, f"Expected section {tc['expected_section']} not found in top 3 for {tc['description']}"
+        assert found_rank is not None, (
+            f"Expected section {tc['expected_section']} not found in top 3 for {tc['description']}"
+        )
         reciprocal_ranks.append(1.0 / found_rank)
         if found_rank == 1:
             rank_1_hits += 1
@@ -146,8 +150,7 @@ def test_indexing_api_endpoints():
 
     # 3. Search clauses
     search_res = client.post(
-        f"/api/documents/{doc.id}/search",
-        json={"query": "laws of the State of Delaware", "top_k": 3}
+        f"/api/documents/{doc.id}/search", json={"query": "laws of the State of Delaware", "top_k": 3}
     )
     assert search_res.status_code == 200
     results = search_res.json()

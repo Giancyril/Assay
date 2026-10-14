@@ -40,8 +40,10 @@ Breach may cause irreparable harm for which damages are inadequate, entitling Di
 Recipient agrees that during the term of this Agreement and for eighteen (18) months thereafter, Recipient shall not directly or indirectly solicit, recruit, or hire any officer or employee of Discloser.
 """
 
+
 def create_audit_test_doc():
     import pymupdf
+
     doc = pymupdf.open()
     page = doc.new_page()
     rect = pymupdf.Rect(50, 50, 550, 800)
@@ -57,10 +59,7 @@ def test_agent_graph_execution_on_prohibited_solicitation():
     rule_nda_05 = next(r for r in nda_set.rules if r.code == "NDA-05")
 
     state = ComplianceCheckState(
-        document_id=doc.id,
-        rule_id=rule_nda_05.id,
-        rule=rule_nda_05,
-        full_document_text=doc.full_text
+        document_id=doc.id, rule_id=rule_nda_05.id, rule=rule_nda_05, full_document_text=doc.full_text
     )
 
     result = compliance_graph.invoke(state)
@@ -77,10 +76,7 @@ def test_agent_graph_execution_on_perpetual_term():
     rule_nda_02 = next(r for r in nda_set.rules if r.code == "NDA-02")
 
     state = ComplianceCheckState(
-        document_id=doc.id,
-        rule_id=rule_nda_02.id,
-        rule=rule_nda_02,
-        full_document_text=doc.full_text
+        document_id=doc.id, rule_id=rule_nda_02.id, rule=rule_nda_02, full_document_text=doc.full_text
     )
 
     result = compliance_graph.invoke(state)
@@ -95,10 +91,7 @@ def test_agent_graph_execution_on_compliant_governing_law():
     rule_nda_04 = next(r for r in nda_set.rules if r.code == "NDA-04")
 
     state = ComplianceCheckState(
-        document_id=doc.id,
-        rule_id=rule_nda_04.id,
-        rule=rule_nda_04,
-        full_document_text=doc.full_text
+        document_id=doc.id, rule_id=rule_nda_04.id, rule=rule_nda_04, full_document_text=doc.full_text
     )
 
     result = compliance_graph.invoke(state)
@@ -113,10 +106,7 @@ def test_searches_recorded_for_multi_phrasing_absence():
     rule_nda_09 = next(r for r in nda_set.rules if r.code == "NDA-09")  # As-Is disclaimer
 
     state = ComplianceCheckState(
-        document_id=doc.id,
-        rule_id=rule_nda_09.id,
-        rule=rule_nda_09,
-        full_document_text=doc.full_text
+        document_id=doc.id, rule_id=rule_nda_09.id, rule=rule_nda_09, full_document_text=doc.full_text
     )
 
     result = compliance_graph.invoke(state)
@@ -128,9 +118,7 @@ def test_searches_recorded_for_multi_phrasing_absence():
 async def test_parallel_document_orchestrator():
     doc = create_audit_test_doc()
     findings = await check_document_against_ruleset(
-        document_id=doc.id,
-        ruleset_id="ruleset-nda-commercial",
-        max_concurrency=4
+        document_id=doc.id, ruleset_id="ruleset-nda-commercial", max_concurrency=4
     )
 
     assert len(findings) == 10
@@ -145,10 +133,7 @@ def test_checks_api_roundtrip():
     doc = create_audit_test_doc()
 
     # 1. Run check
-    response = client.post(
-        "/api/checks/run",
-        json={"document_id": doc.id, "ruleset_id": "ruleset-nda-commercial"}
-    )
+    response = client.post("/api/checks/run", json={"document_id": doc.id, "ruleset_id": "ruleset-nda-commercial"})
     assert response.status_code == 200
     data = response.json()
     assert data["total_findings"] == 10

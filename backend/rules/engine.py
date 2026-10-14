@@ -21,19 +21,14 @@ STARTER_NDA_RULES = [
         severity=Severity.HIGH,
         applicable_document_types=["NDA", "Confidentiality Agreement"],
         parameters=RuleParameters(
-            required_elements=[
-                "publicly known",
-                "prior possession",
-                "independently developed",
-                "rightfully received"
-            ]
+            required_elements=["publicly known", "prior possession", "independently developed", "rightfully received"]
         ),
         search_queries=[
             "confidential information shall not include exceptions",
             "carve-outs publicly known prior possession independently developed",
-            "exclusions to confidential information"
+            "exclusions to confidential information",
         ],
-        guidance="Absence of standard carve-outs leaves recipient with unbounded liability."
+        guidance="Absence of standard carve-outs leaves recipient with unbounded liability.",
     ),
     ComplianceRule(
         id="rule-nda-02",
@@ -45,18 +40,14 @@ STARTER_NDA_RULES = [
         rule_type=RuleType.NUMERIC_THRESHOLD,
         severity=Severity.HIGH,
         applicable_document_types=["NDA"],
-        parameters=RuleParameters(
-            max_threshold=36.0,
-            unit="months",
-            allow_perpetual=False
-        ),
+        parameters=RuleParameters(max_threshold=36.0, unit="months", allow_perpetual=False),
         deterministic_regex=r"\b(in perpetuity|indefinite(ly)?|survive forever|without limitation in time)\b",
         search_queries=[
             "term and termination survive expire years duration",
             "confidentiality obligations survive in perpetuity",
-            "period of confidentiality"
+            "period of confidentiality",
         ],
-        guidance="Flag perpetual duration as Violation. Mark duration > 36 months as Violation."
+        guidance="Flag perpetual duration as Violation. Mark duration > 36 months as Violation.",
     ),
     ComplianceRule(
         id="rule-nda-03",
@@ -68,15 +59,13 @@ STARTER_NDA_RULES = [
         rule_type=RuleType.REQUIRED_CLAUSE,
         severity=Severity.LOW,
         applicable_document_types=["NDA"],
-        parameters=RuleParameters(
-            required_elements=["return or destroy", "certify destruction", "archival backup"]
-        ),
+        parameters=RuleParameters(required_elements=["return or destroy", "certify destruction", "archival backup"]),
         search_queries=[
             "return or certify destruction of confidential materials",
             "archival backup electronic disaster recovery",
-            "return of property upon request"
+            "return of property upon request",
         ],
-        guidance="Solely physical return without destruction option cannot be fulfilled by modern IT systems."
+        guidance="Solely physical return without destruction option cannot be fulfilled by modern IT systems.",
     ),
     ComplianceRule(
         id="rule-nda-04",
@@ -88,15 +77,13 @@ STARTER_NDA_RULES = [
         rule_type=RuleType.REQUIRED_CLAUSE,
         severity=Severity.MEDIUM,
         applicable_document_types=["NDA", "Commercial Contract"],
-        parameters=RuleParameters(
-            approved_values=["Delaware", "New York", "England and Wales", "California"]
-        ),
+        parameters=RuleParameters(approved_values=["Delaware", "New York", "England and Wales", "California"]),
         search_queries=[
             "governing law and jurisdiction venue courts",
             "laws of the State of Delaware or New York",
-            "applicable law dispute resolution"
+            "applicable law dispute resolution",
         ],
-        guidance="If no governing law clause exists or unapproved forum is chosen, flag for review."
+        guidance="If no governing law clause exists or unapproved forum is chosen, flag for review.",
     ),
     ComplianceRule(
         id="rule-nda-05",
@@ -115,9 +102,9 @@ STARTER_NDA_RULES = [
         search_queries=[
             "directly or indirectly solicit recruit hire personnel employees",
             "non-solicitation of employees",
-            "induce any employee to leave"
+            "induce any employee to leave",
         ],
-        guidance="Non-solicitation restrictions belong strictly in definitive commercial agreements, not NDAs."
+        guidance="Non-solicitation restrictions belong strictly in definitive commercial agreements, not NDAs.",
     ),
     ComplianceRule(
         id="rule-nda-06",
@@ -134,9 +121,9 @@ STARTER_NDA_RULES = [
         ),
         search_queries=[
             "compelled disclosure subpoena court order valid legal process",
-            "required by law governmental agency prompt notice"
+            "required by law governmental agency prompt notice",
         ],
-        guidance="Absence leaves party in contempt of court or breach of contract."
+        guidance="Absence leaves party in contempt of court or breach of contract.",
     ),
     ComplianceRule(
         id="rule-nda-07",
@@ -150,14 +137,14 @@ STARTER_NDA_RULES = [
         applicable_document_types=["NDA"],
         parameters=RuleParameters(
             required_elements=["reasonable care", "same degree of care"],
-            prohibited_terms=["highest possible care", "absolute protection", "guarantee against any loss"]
+            prohibited_terms=["highest possible care", "absolute protection", "guarantee against any loss"],
         ),
         deterministic_regex=r"\b(highest (possible|degree of) care|absolute(ly)? (secure|protect)|guarantee(s)? against (any|all) loss)\b",
         search_queries=[
             "duty of care reasonable care degree of care",
-            "highest possible care absolute security guarantee"
+            "highest possible care absolute security guarantee",
         ],
-        guidance="Reject clauses mandating 'highest possible care' or absolute guarantee."
+        guidance="Reject clauses mandating 'highest possible care' or absolute guarantee.",
     ),
     ComplianceRule(
         id="rule-nda-08",
@@ -169,14 +156,12 @@ STARTER_NDA_RULES = [
         rule_type=RuleType.REQUIRED_CLAUSE,
         severity=Severity.LOW,
         applicable_document_types=["NDA"],
-        parameters=RuleParameters(
-            required_elements=["irreparable harm", "injunctive relief", "without bond"]
-        ),
+        parameters=RuleParameters(required_elements=["irreparable harm", "injunctive relief", "without bond"]),
         search_queries=[
             "injunctive relief equitable remedies irreparable harm without bond",
-            "specific performance breach monetary damages inadequate"
+            "specific performance breach monetary damages inadequate",
         ],
-        guidance="Standard enforcement protection."
+        guidance="Standard enforcement protection.",
     ),
     ComplianceRule(
         id="rule-nda-09",
@@ -188,14 +173,12 @@ STARTER_NDA_RULES = [
         rule_type=RuleType.REQUIRED_CLAUSE,
         severity=Severity.LOW,
         applicable_document_types=["NDA"],
-        parameters=RuleParameters(
-            required_elements=["as is", "no warranty", "without warranty"]
-        ),
+        parameters=RuleParameters(required_elements=["as is", "no warranty", "without warranty"]),
         search_queries=[
             "as is without warranty of any kind express or implied",
-            "no representation or warranty accuracy completeness"
+            "no representation or warranty accuracy completeness",
         ],
-        guidance="Prevents preliminary discussions from becoming representations."
+        guidance="Prevents preliminary discussions from becoming representations.",
     ),
     ComplianceRule(
         id="rule-nda-10",
@@ -213,10 +196,10 @@ STARTER_NDA_RULES = [
         deterministic_regex=r"\b(non-circumvent(ion)?|exclusive negotiation|exclusivity period|lock-up)\b",
         search_queries=[
             "non-circumvent non-circumvention direct transaction",
-            "exclusive negotiation lock-up exclusivity period"
+            "exclusive negotiation lock-up exclusivity period",
         ],
-        guidance="NDAs must not tie companies into exclusive business dealings."
-    )
+        guidance="NDAs must not tie companies into exclusive business dealings.",
+    ),
 ]
 
 # ----------------- STARTER RULE SET: CONTRACT HYGIENE -----------------
@@ -231,14 +214,12 @@ STARTER_HYGIENE_RULES = [
         rule_type=RuleType.REQUIRED_CLAUSE,
         severity=Severity.CRITICAL,
         applicable_document_types=["Commercial Contract", "MSA", "SOW"],
-        parameters=RuleParameters(
-            required_elements=["limitation of liability", "aggregate liability", "fees paid"]
-        ),
+        parameters=RuleParameters(required_elements=["limitation of liability", "aggregate liability", "fees paid"]),
         search_queries=[
             "limitation of liability aggregate liability fees paid in 12 months",
-            "liability cap maximum liability"
+            "liability cap maximum liability",
         ],
-        guidance="Uncapped liability exposes the company to existential financial risk."
+        guidance="Uncapped liability exposes the company to existential financial risk.",
     ),
     ComplianceRule(
         id="rule-hyg-02",
@@ -250,15 +231,12 @@ STARTER_HYGIENE_RULES = [
         rule_type=RuleType.NUMERIC_THRESHOLD,
         severity=Severity.HIGH,
         applicable_document_types=["Commercial Contract", "MSA"],
-        parameters=RuleParameters(
-            min_threshold=30.0,
-            unit="days"
-        ),
+        parameters=RuleParameters(min_threshold=30.0, unit="days"),
         search_queries=[
             "terminate for convenience written notice days prior",
-            "termination without cause notice period"
+            "termination without cause notice period",
         ],
-        guidance="Notice periods below 30 days do not allow operational transition."
+        guidance="Notice periods below 30 days do not allow operational transition.",
     ),
     ComplianceRule(
         id="rule-hyg-03",
@@ -276,9 +254,9 @@ STARTER_HYGIENE_RULES = [
         deterministic_regex=r"\b(automatically renew(s)? (for|without)|evergreen contract)\b",
         search_queries=[
             "automatic renewal evergreen successive terms without notice",
-            "renew automatically unless notified"
+            "renew automatically unless notified",
         ],
-        guidance="Auto-renewal locks organizations into unwanted recurring costs."
+        guidance="Auto-renewal locks organizations into unwanted recurring costs.",
     ),
     ComplianceRule(
         id="rule-hyg-04",
@@ -295,9 +273,9 @@ STARTER_HYGIENE_RULES = [
         ),
         search_queries=[
             "data protection security safeguards personal data GDPR CCPA",
-            "technical and organizational measures confidentiality"
+            "technical and organizational measures confidentiality",
         ],
-        guidance="Mandatory under global data privacy regulations."
+        guidance="Mandatory under global data privacy regulations.",
     ),
     ComplianceRule(
         id="rule-hyg-05",
@@ -309,14 +287,12 @@ STARTER_HYGIENE_RULES = [
         rule_type=RuleType.REQUIRED_CLAUSE,
         severity=Severity.MEDIUM,
         applicable_document_types=["Commercial Contract", "MSA"],
-        parameters=RuleParameters(
-            required_elements=["assignment", "prior written consent"]
-        ),
+        parameters=RuleParameters(required_elements=["assignment", "prior written consent"]),
         search_queries=[
             "neither party may assign prior written consent",
-            "assignment change of control merger acquisition"
+            "assignment change of control merger acquisition",
         ],
-        guidance="Prevents transfer of contract to competitor without knowledge."
+        guidance="Prevents transfer of contract to competitor without knowledge.",
     ),
     ComplianceRule(
         id="rule-hyg-06",
@@ -328,15 +304,13 @@ STARTER_HYGIENE_RULES = [
         rule_type=RuleType.REQUIRED_CLAUSE,
         severity=Severity.LOW,
         applicable_document_types=["Commercial Contract", "MSA"],
-        parameters=RuleParameters(
-            required_elements=["force majeure", "beyond reasonable control", "acts of god"]
-        ),
+        parameters=RuleParameters(required_elements=["force majeure", "beyond reasonable control", "acts of god"]),
         search_queries=[
             "force majeure acts of god war epidemic strikes",
-            "events beyond reasonable control excuse performance"
+            "events beyond reasonable control excuse performance",
         ],
-        guidance="Standard business continuity risk mitigation."
-    )
+        guidance="Standard business continuity risk mitigation.",
+    ),
 ]
 
 
@@ -346,6 +320,7 @@ class RuleEngine:
     Ensures rules are immutable data, changes produce new semantic versions,
     and reports remain reproducible.
     """
+
     def __init__(self):
         # Key: (ruleset_id, version) -> RuleSet
         self._ruleset_versions: dict[str, RuleSet] = {}
@@ -362,7 +337,7 @@ class RuleEngine:
             description="Comprehensive compliance rules for commercial non-disclosure and confidentiality agreements.",
             document_type="NDA",
             rules=STARTER_NDA_RULES,
-            is_default=True
+            is_default=True,
         )
         self.register_rule_set(nda_set)
 
@@ -374,7 +349,7 @@ class RuleEngine:
             description="Foundational contract risk, liability caps, notice, and operational hygiene controls.",
             document_type="Commercial Contract",
             rules=STARTER_HYGIENE_RULES,
-            is_default=False
+            is_default=False,
         )
         self.register_rule_set(hygiene_set)
 
@@ -386,16 +361,13 @@ class RuleEngine:
     def get_rule_set(self, ruleset_id: str, version: str | None = None) -> RuleSet:
         target_version = version or self._latest_versions.get(ruleset_id)
         if not target_version:
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
-                detail=f"Rule set '{ruleset_id}' not found."
-            )
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Rule set '{ruleset_id}' not found.")
         key = f"{ruleset_id}:{target_version}"
         ruleset = self._ruleset_versions.get(key)
         if not ruleset:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
-                detail=f"Rule set '{ruleset_id}' version '{target_version}' not found."
+                detail=f"Rule set '{ruleset_id}' version '{target_version}' not found.",
             )
         return ruleset
 
@@ -414,11 +386,7 @@ class RuleEngine:
         return sorted(versions)
 
     def create_new_version(
-        self,
-        ruleset_id: str,
-        new_version: str,
-        updated_rules: list[ComplianceRule],
-        description: str | None = None
+        self, ruleset_id: str, new_version: str, updated_rules: list[ComplianceRule], description: str | None = None
     ) -> RuleSet:
         """
         Creates a new version of a rule set without overwriting previous versions.
@@ -429,7 +397,7 @@ class RuleEngine:
         if key in self._ruleset_versions:
             raise HTTPException(
                 status_code=status.HTTP_409_CONFLICT,
-                detail=f"Version '{new_version}' already exists for rule set '{ruleset_id}'."
+                detail=f"Version '{new_version}' already exists for rule set '{ruleset_id}'.",
             )
 
         new_set = RuleSet(
@@ -439,7 +407,7 @@ class RuleEngine:
             description=description or current.description,
             document_type=current.document_type,
             rules=updated_rules,
-            is_default=current.is_default
+            is_default=current.is_default,
         )
         self.register_rule_set(new_set)
         return new_set
