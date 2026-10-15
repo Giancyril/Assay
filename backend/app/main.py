@@ -15,6 +15,7 @@ from backend.app.routers.highlight import router as highlight_router
 from backend.app.routers.indexing import router as indexing_router
 from backend.app.routers.redline import router as redline_router
 from backend.app.routers.reports import router as reports_router
+from backend.app.routers.risk import router as risk_router
 from backend.app.routers.rules import router as rules_router
 from backend.app.routers.stream import router as stream_router
 from backend.app.routers.studio import router as studio_router
@@ -57,6 +58,7 @@ app.include_router(stream_router)
 app.include_router(studio_router)
 app.include_router(certificate_router)
 app.include_router(compare_router)
+app.include_router(risk_router)
 app.include_router(reports_router)
 
 
