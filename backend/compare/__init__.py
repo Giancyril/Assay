@@ -1,1 +1,1 @@
-" \Cross-Document Comparative Conflict Engine.\\n
+"""Cross-Document Comparative Conflict Engine."""

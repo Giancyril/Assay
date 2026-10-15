@@ -1,5 +1,6 @@
-from enum import StrEnum
 from datetime import UTC, datetime
+from enum import StrEnum
+
 from pydantic import BaseModel, Field
 
 
