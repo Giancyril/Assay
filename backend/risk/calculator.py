@@ -10,6 +10,11 @@ from backend.risk.models import (
     RiskTier,
 )
 
+_PAT_PERPETUAL = re.compile(r"(?i)\b(perpetual|indefinitely|indefinite|survive indefinitely)\b")
+_PAT_NONSOLICIT = re.compile(r"(?i)\b(non-solicit|solicit.*employees?|hire.*employees?)\b")
+_PAT_CAP = re.compile(r"(?i)(aggregate liability|limitation of liability|liability cap|shall not exceed|cap(?:ped)? at)")
+_PAT_INDEMNITY = re.compile(r"(?i)(indemnif|hold harmless|defend and hold)")
+
 
 class FinancialExposureCalculator:
     """Calculates monetary liability exposure and quantitative risk scores for contract findings."""
@@ -25,13 +30,13 @@ class FinancialExposureCalculator:
         text = document.full_text
         lower_text = text.lower()
 
-        # Check for perpetual obligation (finding or text match)
-        has_perpetual_finding = any(f.rule_id == "rule-nda-02" and f.verdict.value == "VIOLATION" for f in findings)
-        has_perpetual_text = bool(re.search(r"(?i)(perpetual|indefinite|survive indefinitely)", lower_text))
+        # 1. Perpetual obligation check
+        has_perpetual_finding = any(
+            f.rule_id == "rule-nda-02" and f.verdict.value == "VIOLATION" for f in findings
+        )
+        has_perpetual_text = bool(_PAT_PERPETUAL.search(lower_text))
         if has_perpetual_finding or has_perpetual_text:
-            min_exp = 25000.0
-            max_exp = 150000.0
-            prob = 0.35
+            min_exp, max_exp, prob = 25000.0, 150000.0, 0.35
             items.append(
                 FinancialRiskExposureItem(
                     category=ExposureCategory.OPERATIONAL_BREACH,
@@ -47,13 +52,13 @@ class FinancialExposureCalculator:
                 )
             )
 
-        # Check for non-solicitation restrictions
-        has_nonsolicit_finding = any(f.rule_id == "rule-nda-05" and f.verdict.value == "VIOLATION" for f in findings)
-        has_nonsolicit_text = bool(re.search(r"(?i)(non-solicit|solicit.*employees?|hire.*employees?)", lower_text))
+        # 2. Non-solicitation check
+        has_nonsolicit_finding = any(
+            f.rule_id == "rule-nda-05" and f.verdict.value == "VIOLATION" for f in findings
+        )
+        has_nonsolicit_text = bool(_PAT_NONSOLICIT.search(lower_text))
         if has_nonsolicit_finding or has_nonsolicit_text:
-            min_exp = 50000.0
-            max_exp = 250000.0
-            prob = 0.25
+            min_exp, max_exp, prob = 50000.0, 250000.0, 0.25
             items.append(
                 FinancialRiskExposureItem(
                     category=ExposureCategory.REGULATORY_PENALTY,
@@ -69,17 +74,10 @@ class FinancialExposureCalculator:
                 )
             )
 
-        # Check for uncapped liability
-        has_cap = bool(
-            re.search(
-                r"(?i)(?:aggregate liability|limitation of liability|liability.*cap|shall not exceed)",
-                lower_text,
-            )
-        )
+        # 3. Uncapped liability check
+        has_cap = bool(_PAT_CAP.search(lower_text))
         if not has_cap:
-            min_exp = 200000.0
-            max_exp = 1500000.0
-            prob = 0.15
+            min_exp, max_exp, prob = 200000.0, 1500000.0, 0.15
             items.append(
                 FinancialRiskExposureItem(
                     category=ExposureCategory.UNLIMITED_LIABILITY,
@@ -95,12 +93,10 @@ class FinancialExposureCalculator:
                 )
             )
 
-        # Check for broad indemnity obligations
-        has_indemnity = bool(re.search(r"(?i)(?:indemnif|hold harmless|defend and hold)", lower_text))
+        # 4. Indemnity check
+        has_indemnity = bool(_PAT_INDEMNITY.search(lower_text))
         if has_indemnity:
-            min_exp = 100000.0
-            max_exp = 750000.0
-            prob = 0.20
+            min_exp, max_exp, prob = 100000.0, 750000.0, 0.20
             items.append(
                 FinancialRiskExposureItem(
                     category=ExposureCategory.INDEMNIFICATION,
@@ -121,23 +117,19 @@ class FinancialExposureCalculator:
         total_max = sum(i.estimated_max_exposure_usd for i in items)
         total_expected_loss = sum(i.expected_loss_usd for i in items)
 
-        # Compute Score (0 to 100)
-        # Baseline score calculation: $500,000 expected loss maps to ~100
-        score = min(100.0, (total_expected_loss / 3500.0))
-        score = round(score, 1)
+        # Composite risk score (0-100); $3500 expected loss ~ score of 1
+        score = round(min(100.0, total_expected_loss / 3500.0), 1)
 
         if score <= 15.0:
-            tier = RiskTier.LOW
-            grade = "A (Low Risk)"
+            tier, grade = RiskTier.LOW, "A (Low Risk)"
         elif score <= 40.0:
-            tier = RiskTier.MEDIUM
-            grade = "B (Moderate Risk)"
+            tier, grade = RiskTier.MEDIUM, "B (Moderate Risk)"
         elif score <= 70.0:
-            tier = RiskTier.HIGH
-            grade = "C (Elevated Risk)"
+            tier, grade = RiskTier.HIGH, "C (Elevated Risk)"
+        elif score <= 85.0:
+            tier, grade = RiskTier.CRITICAL, "D (High Risk)"
         else:
-            tier = RiskTier.CRITICAL
-            grade = "D (High Risk)" if score <= 85.0 else "F (Critical Risk)"
+            tier, grade = RiskTier.CRITICAL, "F (Critical Risk)"
 
         key_vulns = [i.title for i in items if i.risk_tier in (RiskTier.CRITICAL, RiskTier.HIGH)]
         if not key_vulns and items:
