@@ -4,7 +4,7 @@ from fastapi import APIRouter, HTTPException, status
 
 from backend.compare.engine import ComparativeConflictEngine
 from backend.compare.models import ComparativeAuditRequest, ComparativeAuditResult
-from backend.ingestion.repository import document_store
+from backend.ingestion.repository import doc_repository
 
 logger = logging.getLogger("compliance_agent.compare")
 
@@ -17,14 +17,14 @@ _comparison_store: dict[str, ComparativeAuditResult] = {}
 @router.post("/audit", response_model=ComparativeAuditResult, status_code=status.HTTP_200_OK)
 async def run_comparative_audit(req: ComparativeAuditRequest):
     """Compares two uploaded documents, identifies conflicting clauses, and computes alignment score."""
-    doc_a = document_store.get(req.doc_a_id)
+    doc_a = doc_repository.get_document(req.doc_a_id)
     if not doc_a:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail=f"Primary document '{req.doc_a_id}' not found. Please upload it first.",
         )
 
-    doc_b = document_store.get(req.doc_b_id)
+    doc_b = doc_repository.get_document(req.doc_b_id)
     if not doc_b:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
