@@ -9,6 +9,7 @@ from backend.app.config import settings
 from backend.app.database import check_db_health
 from backend.app.routers.certificate import router as certificate_router
 from backend.app.routers.checks import router as checks_router
+from backend.app.routers.compare import router as compare_router
 from backend.app.routers.documents import router as documents_router
 from backend.app.routers.highlight import router as highlight_router
 from backend.app.routers.indexing import router as indexing_router
@@ -55,6 +56,7 @@ app.include_router(highlight_router)
 app.include_router(stream_router)
 app.include_router(studio_router)
 app.include_router(certificate_router)
+app.include_router(compare_router)
 app.include_router(reports_router)
 
 
