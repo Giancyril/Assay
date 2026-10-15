@@ -16,6 +16,7 @@ from backend.app.routers.indexing import router as indexing_router
 from backend.app.routers.redline import router as redline_router
 from backend.app.routers.reports import router as reports_router
 from backend.app.routers.remediation import router as remediation_router
+from backend.app.routers.benchmark import router as benchmark_router
 from backend.app.routers.risk import router as risk_router
 from backend.app.routers.rules import router as rules_router
 from backend.app.routers.stream import router as stream_router
@@ -62,6 +63,7 @@ app.include_router(compare_router)
 app.include_router(risk_router)
 app.include_router(reports_router)
 app.include_router(remediation_router)
+app.include_router(benchmark_router)
 
 
 @app.get("/api/health", status_code=status.HTTP_200_OK, tags=["Health"])
