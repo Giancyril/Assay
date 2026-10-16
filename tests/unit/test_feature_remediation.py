@@ -1,14 +1,12 @@
-﻿import pytest
-from fastapi.testclient import TestClient
+﻿from fastapi.testclient import TestClient
 
 from backend.agent.findings import Finding, findings_repository
 from backend.app.main import app
 from backend.ingestion.models import DocumentFileType, ParsedDocument
 from backend.ingestion.repository import doc_repository
-from backend.remediation.engine import RemediationPlaybookEngine, remediation_engine
+from backend.remediation.engine import RemediationPlaybookEngine
 from backend.remediation.models import (
     RemediationActionType,
-    RemediationPriority,
     RemediationStatus,
 )
 from backend.rules.models import RuleType, Severity, Verdict

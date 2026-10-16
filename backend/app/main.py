@@ -7,17 +7,17 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from backend.app.config import settings
 from backend.app.database import check_db_health
+from backend.app.routers.benchmark import router as benchmark_router
 from backend.app.routers.certificate import router as certificate_router
 from backend.app.routers.checks import router as checks_router
 from backend.app.routers.compare import router as compare_router
 from backend.app.routers.documents import router as documents_router
 from backend.app.routers.highlight import router as highlight_router
 from backend.app.routers.indexing import router as indexing_router
-from backend.app.routers.redline import router as redline_router
-from backend.app.routers.reports import router as reports_router
-from backend.app.routers.remediation import router as remediation_router
-from backend.app.routers.benchmark import router as benchmark_router
 from backend.app.routers.ledger import router as ledger_router
+from backend.app.routers.redline import router as redline_router
+from backend.app.routers.remediation import router as remediation_router
+from backend.app.routers.reports import router as reports_router
 from backend.app.routers.risk import router as risk_router
 from backend.app.routers.rules import router as rules_router
 from backend.app.routers.stream import router as stream_router

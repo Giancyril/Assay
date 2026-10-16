@@ -1,5 +1,4 @@
-﻿import pytest
-from fastapi.testclient import TestClient
+﻿from fastapi.testclient import TestClient
 
 from backend.agent.findings import Finding, findings_repository
 from backend.app.main import app

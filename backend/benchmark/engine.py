@@ -1,6 +1,5 @@
 ﻿import uuid
 from datetime import UTC, datetime
-from typing import Optional
 
 from backend.agent.findings import Finding
 from backend.benchmark.models import (
@@ -12,7 +11,6 @@ from backend.benchmark.models import (
     StandardRequirement,
 )
 from backend.ingestion.models import ParsedDocument
-
 
 STANDARD_CATALOG: dict[RegulatoryStandard, list[StandardRequirement]] = {
     RegulatoryStandard.GDPR: [
@@ -126,7 +124,6 @@ class RegulatoryCrosswalkEngine:
         document: ParsedDocument,
         findings: list[Finding],
     ) -> RegulatoryBenchmarkReport:
-        doc_text = (document.full_text if hasattr(document, "full_text") and document.full_text else "").lower()
 
         # Extract non-compliant findings
         failed_findings: list[Finding] = []

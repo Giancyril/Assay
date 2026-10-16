@@ -1,17 +1,17 @@
 ﻿from datetime import UTC, datetime
-from enum import Enum
-from typing import Optional
+from enum import StrEnum
+
 from pydantic import BaseModel, Field
 
 
-class RemediationPriority(str, Enum):
+class RemediationPriority(StrEnum):
     CRITICAL = "CRITICAL"
     HIGH = "HIGH"
     MEDIUM = "MEDIUM"
     LOW = "LOW"
 
 
-class RemediationStatus(str, Enum):
+class RemediationStatus(StrEnum):
     PENDING = "PENDING"
     IN_PROGRESS = "IN_PROGRESS"
     RESOLVED = "RESOLVED"
@@ -19,7 +19,7 @@ class RemediationStatus(str, Enum):
     ESCALATED = "ESCALATED"
 
 
-class RemediationActionType(str, Enum):
+class RemediationActionType(StrEnum):
     CONTRACT_AMENDMENT = "CONTRACT_AMENDMENT"
     POLICY_UPDATE = "POLICY_UPDATE"
     TECHNICAL_CONTROL = "TECHNICAL_CONTROL"
@@ -36,11 +36,11 @@ class RemediationActionItem(BaseModel):
     action_type: RemediationActionType = Field(..., description="Type of remediation required")
     priority: RemediationPriority = Field(..., description="Remediation urgency and priority")
     sla_days: int = Field(default=14, description="Target turnaround SLA in business days")
-    suggested_clause: Optional[str] = Field(default=None, description="Drafted amendment clause text")
+    suggested_clause: str | None = Field(default=None, description="Drafted amendment clause text")
     rationale: str = Field(..., description="Legal or compliance justification")
     responsible_role: str = Field(..., description="Organizational owner responsible for execution")
     status: RemediationStatus = Field(default=RemediationStatus.PENDING, description="Current status")
-    completed_at: Optional[datetime] = Field(default=None, description="Resolution timestamp")
+    completed_at: datetime | None = Field(default=None, description="Resolution timestamp")
 
 
 class RemediationPlaybook(BaseModel):
@@ -59,9 +59,9 @@ class RemediationPlaybook(BaseModel):
 
 class RemediationGenerateRequest(BaseModel):
     document_id: str = Field(..., description="Document ID to generate remediation plan for")
-    target_completion_days: Optional[int] = Field(default=30, description="Desired remediation window")
+    target_completion_days: int | None = Field(default=30, description="Desired remediation window")
 
 
 class RemediationStatusUpdateRequest(BaseModel):
     status: RemediationStatus = Field(..., description="New remediation status")
-    notes: Optional[str] = Field(default=None, description="Resolution notes or waiver justification")
+    notes: str | None = Field(default=None, description="Resolution notes or waiver justification")

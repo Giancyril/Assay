@@ -1,6 +1,5 @@
 ﻿import uuid
 from datetime import UTC, datetime
-from typing import Optional
 
 from backend.agent.findings import Finding
 from backend.ingestion.models import ParsedDocument
@@ -11,7 +10,6 @@ from backend.remediation.models import (
     RemediationPriority,
     RemediationStatus,
 )
-
 
 CLAUSE_TEMPLATES = {
     "confidentiality": (
@@ -58,21 +56,29 @@ class RemediationPlaybookEngine:
         self,
         document_id: str,
         findings: list[Finding],
-        parsed_doc: Optional[ParsedDocument] = None,
+        parsed_doc: ParsedDocument | None = None,
         target_completion_days: int = 30,
     ) -> RemediationPlaybook:
         """Synthesizes compliance findings into a structured, prioritized remediation playbook."""
         items: list[RemediationActionItem] = []
-        doc_text = parsed_doc.text.lower() if parsed_doc and parsed_doc.text else ""
 
         for finding in findings:
-            # Only generate remediation for non-compliant or warning findings
-            status_val = getattr(finding.status, "value", str(finding.status)).lower()
-            if status_val not in ["failed", "fail", "non_compliant", "warning", "warn"]:
+            verdict_val = ""
+            if hasattr(finding, "verdict") and finding.verdict:
+                verdict_val = getattr(finding.verdict, "value", str(finding.verdict)).lower()
+            elif hasattr(finding, "status") and finding.status:
+                verdict_val = getattr(finding.status, "value", str(finding.status)).lower()
+
+            # Skip compliant or not applicable findings
+            if verdict_val in ["compliant", "passed", "pass", "not_applicable"]:
                 continue
 
-            rule_id = finding.rule_id
-            finding_text = f"{finding.rule_title} {finding.explanation}".lower()
+            rule_id = getattr(finding, "rule_id", "RULE-GENERIC")
+            rule_title = getattr(finding, "rule_name", getattr(finding, "rule_title", rule_id))
+            reasoning = getattr(finding, "reasoning", getattr(finding, "explanation", ""))
+            finding_id = getattr(finding, "id", getattr(finding, "finding_id", f"f-{uuid.uuid4().hex[:6]}"))
+
+            finding_text = f"{rule_title} {reasoning}".lower()
 
             # Determine action type, role, and clause template
             if "liability" in finding_text or "indemnif" in finding_text:
@@ -137,31 +143,29 @@ class RemediationPlaybookEngine:
                 role = "Compliance Operations Manager"
                 suggested_clause = None
                 title = f"Review and Correct Compliance Deviation ({rule_id})"
-                desc = f"Address identified non-compliance in rule '{finding.rule_title}': {finding.explanation}"
+                desc = f"Address identified non-compliance in rule '{rule_title}': {reasoning}"
 
             action_item = RemediationActionItem(
                 action_id=f"act-{uuid.uuid4().hex[:8]}",
                 rule_id=rule_id,
-                finding_id=finding.finding_id,
+                finding_id=finding_id,
                 title=title,
                 description=desc,
                 action_type=action_type,
                 priority=priority,
                 sla_days=sla_days,
                 suggested_clause=suggested_clause,
-                rationale=finding.explanation,
+                rationale=reasoning or "Identified during automated audit",
                 responsible_role=role,
                 status=RemediationStatus.PENDING,
             )
             items.append(action_item)
 
-        # Count priorities
         crit = sum(1 for i in items if i.priority == RemediationPriority.CRITICAL)
         high = sum(1 for i in items if i.priority == RemediationPriority.HIGH)
         med = sum(1 for i in items if i.priority == RemediationPriority.MEDIUM)
         low = sum(1 for i in items if i.priority == RemediationPriority.LOW)
 
-        # Estimated duration is driven by highest SLA or max days
         est_days = max([i.sla_days for i in items], default=0)
 
         playbook_id = f"pb-{uuid.uuid4().hex[:8]}"
@@ -188,10 +192,10 @@ class RemediationPlaybookEngine:
         self._playbooks[playbook_id] = playbook
         return playbook
 
-    def get_playbook(self, playbook_id: str) -> Optional[RemediationPlaybook]:
+    def get_playbook(self, playbook_id: str) -> RemediationPlaybook | None:
         return self._playbooks.get(playbook_id)
 
-    def get_playbook_by_document(self, document_id: str) -> Optional[RemediationPlaybook]:
+    def get_playbook_by_document(self, document_id: str) -> RemediationPlaybook | None:
         for pb in reversed(list(self._playbooks.values())):
             if pb.document_id == document_id:
                 return pb
@@ -202,8 +206,8 @@ class RemediationPlaybookEngine:
         playbook_id: str,
         action_id: str,
         new_status: RemediationStatus,
-        notes: Optional[str] = None,
-    ) -> Optional[RemediationActionItem]:
+        notes: str | None = None,
+    ) -> RemediationActionItem | None:
         pb = self._playbooks.get(playbook_id)
         if not pb:
             return None

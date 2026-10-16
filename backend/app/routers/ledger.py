@@ -1,5 +1,4 @@
 ﻿import logging
-from typing import Optional
 
 from fastapi import APIRouter, HTTPException, Query, status
 
@@ -20,7 +19,7 @@ router = APIRouter(prefix="/api/ledger", tags=["Cryptographic Audit Ledger & Tim
     response_model=list[LedgerBlock],
     status_code=status.HTTP_200_OK,
 )
-async def get_ledger_timeline(document_id: Optional[str] = Query(default=None, description="Optional document filter")):
+async def get_ledger_timeline(document_id: str | None = Query(default=None, description="Optional document filter")):
     """Returns the chronological audit event ledger blocks, optionally filtered by document."""
     return audit_ledger_service.get_timeline(document_id=document_id)
 

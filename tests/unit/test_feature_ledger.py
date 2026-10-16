@@ -1,5 +1,4 @@
-﻿import pytest
-from fastapi.testclient import TestClient
+﻿from fastapi.testclient import TestClient
 
 from backend.app.main import app
 from backend.ledger.models import LedgerEventType

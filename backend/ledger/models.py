@@ -1,10 +1,11 @@
 ﻿from datetime import UTC, datetime
-from enum import Enum
-from typing import Any, Optional
+from enum import StrEnum
+from typing import Any
+
 from pydantic import BaseModel, Field
 
 
-class LedgerEventType(str, Enum):
+class LedgerEventType(StrEnum):
     DOCUMENT_INGESTED = "DOCUMENT_INGESTED"
     AUDIT_INITIATED = "AUDIT_INITIATED"
     FINDING_RECORDED = "FINDING_RECORDED"
@@ -30,7 +31,7 @@ class LedgerVerificationResult(BaseModel):
     is_valid: bool = Field(..., description="True if cryptographic chain is completely intact")
     total_blocks: int = Field(..., ge=0)
     last_block_hash: str
-    tampered_block_index: Optional[int] = Field(default=None)
+    tampered_block_index: int | None = Field(default=None)
     verification_timestamp: datetime = Field(default_factory=lambda: datetime.now(UTC))
     message: str
 

@@ -1,7 +1,7 @@
 ﻿import hashlib
 import json
 from datetime import UTC, datetime
-from typing import Any, Optional
+from typing import Any
 
 from backend.ledger.models import (
     LedgerBlock,
@@ -73,7 +73,7 @@ class AuditLedgerService:
         document_id: str,
         event_type: LedgerEventType,
         actor: str = "system:compliance_orchestrator",
-        payload: Optional[dict[str, Any]] = None,
+        payload: dict[str, Any] | None = None,
     ) -> LedgerBlock:
         payload = payload or {}
         now = datetime.now(UTC)
@@ -106,12 +106,12 @@ class AuditLedgerService:
         self._chain.append(block)
         return block
 
-    def get_timeline(self, document_id: Optional[str] = None) -> list[LedgerBlock]:
+    def get_timeline(self, document_id: str | None = None) -> list[LedgerBlock]:
         if document_id:
             return [b for b in self._chain if b.document_id == document_id]
         return list(self._chain)
 
-    def get_block(self, block_index: int) -> Optional[LedgerBlock]:
+    def get_block(self, block_index: int) -> LedgerBlock | None:
         if 0 <= block_index < len(self._chain):
             return self._chain[block_index]
         return None

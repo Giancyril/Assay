@@ -1,10 +1,10 @@
 ﻿from datetime import UTC, datetime
-from enum import Enum
-from typing import Optional
+from enum import StrEnum
+
 from pydantic import BaseModel, Field
 
 
-class RegulatoryStandard(str, Enum):
+class RegulatoryStandard(StrEnum):
     GDPR = "GDPR"
     HIPAA = "HIPAA"
     SOC2_TYPE2 = "SOC2_TYPE2"
@@ -13,7 +13,7 @@ class RegulatoryStandard(str, Enum):
     PCI_DSS = "PCI_DSS"
 
 
-class ComplianceStatusTier(str, Enum):
+class ComplianceStatusTier(StrEnum):
     COMPLIANT = "COMPLIANT"
     PARTIAL = "PARTIAL"
     NON_COMPLIANT = "NON_COMPLIANT"
